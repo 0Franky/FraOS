@@ -24,7 +24,9 @@ RUN sed -i 's/^ID=.*/ID=fedora/' /etc/os-release
 
 ## Basi alternative (usate dai tag "prova" — 1 install, poi `bootc switch`):
 #   ghcr.io/ublue-os/bluefin-dx-nvidia-open:stable   # dev-oriented, NVIDIA-open, Secure Boot ON
-#   quay.io/rakuos/rakuos-base-nvidia:latest         # kernel CachyOS, NVIDIA unsigned -> Secure Boot OFF
+#   quay.io/rakuos/rakuos-base-nvidia-v3:latest      # kernel CachyOS + userspace ricompilato
+#                                                    # per x86-64-v3 (il livello dell'i7-8700K).
+#                                                    # NVIDIA unsigned -> Secure Boot OFF
 #   (RakuOS ha migrato su GitLab; le immagini stanno ora su quay.io)
 
 # Homebrew (CLI user-space) dall'immagine ublue brew

@@ -68,6 +68,7 @@ cat > "$WORK/altri.list" <<'EOF'
 ffmpeg
 x264-libs
 tailscale
+code
 nvidia-container-toolkit
 EOF
 

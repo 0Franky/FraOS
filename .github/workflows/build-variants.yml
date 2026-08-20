@@ -39,8 +39,11 @@ jobs:
         include:
           - tag: bluefin
             base_image: "ghcr.io/ublue-os/bluefin-dx-nvidia-open:stable"
+          # Variante -v3: TUTTO lo userspace ricompilato per x86-64-v3 (AVX2/BMI2/FMA),
+          # non solo il kernel CachyOS. E' il massimo sfruttabile dall'i7-8700K
+          # (Coffee Lake): la variante -v4 richiede AVX-512, che quella CPU non ha.
           - tag: rakuos
-            base_image: "quay.io/rakuos/rakuos-base-nvidia:latest"
+            base_image: "quay.io/rakuos/rakuos-base-nvidia-v3:latest"
 
     steps:
       - name: Prepare environment

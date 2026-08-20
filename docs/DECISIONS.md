@@ -35,13 +35,15 @@
 | [D-020](#d-020) | Installazione via ISO Bazzite ufficiale + `bootc switch` | ACCETTATA | 2026-08-20 |
 | [D-021](#d-021) | rEFInd | **PROPOSTA: no** | 2026-08-20 |
 | [D-022](#d-022) | Allineamento pacchetti all'upstream (agosto) | ACCETTATA | 2026-08-20 |
-| [D-023](#d-023) | Set Flatpak finale | **APERTA** | — |
+| [D-023](#d-023) | Set Flatpak finale + VS Code bakato | ACCETTATA | 2026-08-20 |
 | [D-024](#d-024) | Repo GitHub **pubblico** | ACCETTATA | 2026-08-20 |
 | [D-025](#d-025) | Servono **due** COPR: `dms` **e** `danklinux` | ACCETTATA | 2026-08-20 |
 | [D-026](#d-026) | Ripristinati i companion DMS decisi a luglio | ACCETTATA | 2026-08-20 |
 | [D-027](#d-027) | `iotop` → `iotop-c` (non esiste più in F43) | ACCETTATA | 2026-08-20 |
 | [D-028](#d-028) | Nerd Font da release upstream pinnata | ACCETTATA | 2026-08-20 |
 | [D-029](#d-029) | Validazione pacchetti offline prima di ogni push | ACCETTATA | 2026-08-20 |
+| [D-030](#d-030) | CI a rumore minimo + rimosso Renovate | ACCETTATA | 2026-08-20 |
+| [D-031](#d-031) | Tag `rakuos` → variante **-v3** (x86-64-v3) | ACCETTATA | 2026-08-20 |
 
 ---
 
@@ -340,17 +342,46 @@ Dal commit upstream `557a52d` (2026-08-19) recepiamo:
 ---
 
 ## D-023
-### Set Flatpak finale
-**Stato:** **APERTA** — decide Fra
+### Set Flatpak finale + VS Code bakato (non Flatpak)
+**Stato:** ACCETTATA · **Data:** 2026-08-20
 
-Oggi in `/usr/share/fraos/flatpaks.list` (installati al primo boot) ci sono solo:
-`com.google.Chrome`, `com.github.tchx84.Flatseal`.
+**Set scelto da Fra**, installato al primo boot da `/usr/share/fraos/flatpaks.list`.
+Tutti gli ID sono stati **verificati contro l'API di Flathub** prima di scriverli:
 
-Candidati dall'inventario di luglio, mai confermati: **VS Code** (o via brew), **Postman**,
-un secondo browser (Firefox/Brave), un player video (mpv è già bakato nativo), Boxes.
+| ID | App |
+|---|---|
+| `com.google.Chrome` | Google Chrome |
+| `com.github.tchx84.Flatseal` | Flatseal (gestione permessi dei Flatpak) |
+| `org.mozilla.firefox` | Firefox |
+| `org.telegram.desktop` | Telegram |
+| `com.discordapp.Discord` | Discord |
+| `org.videolan.VLC` | VLC |
+| `org.audacityteam.Audacity` | Audacity |
+| `org.libreoffice.LibreOffice` | LibreOffice |
 
-**Non è bloccante:** i Flatpak si installano anche a mano dopo, senza ricostruire l'immagine.
-Metterli in lista serve solo ad averli già pronti al primo boot.
+Scartati dopo valutazione: Postman, Bitwarden, DBeaver, Spotify, Obsidian, GIMP, Boxes.
+Aggiungerne uno dopo non richiede rebuild: basta `flatpak install <id>` sulla macchina.
+Metterlo in lista serve solo ad averlo pronto al primo boot di un utente nuovo.
+
+### VS Code: **bakato nell'immagine**, non Flatpak
+
+Installato da `dnf` col repo ufficiale Microsoft (`packages.microsoft.com/yumrepos/vscode`).
+
+**Perché non Flatpak:** la versione sandboxed fa attrito proprio con l'uso che se ne fa qui —
+devcontainer, podman, terminale integrato che deve vedere l'host. È la stessa scelta di
+Bluefin-dx, che lo include nell'immagine.
+
+**Conseguenza:** aggiornare VS Code richiede un `bootc upgrade` come per ogni altro pacchetto
+di sistema. Con il bump giornaliero ([D-014](#d-014)) succede da solo.
+
+### Nota su LibreOffice vs le alternative
+
+Scelto **LibreOffice**: suite completa (Writer, Calc, Impress, Base, Draw, Math), software
+libero, nei repo di tutti. **ONLYOFFICE** (`org.onlyoffice.desktopeditors`) sarebbe preferibile
+se il caso d'uso prevalente fosse *ricevere e restituire* file `.docx`/`.xlsx`/`.pptx` altrui:
+ha una fedeltà di layout OOXML migliore e un'interfaccia in stile MS Office, ma è meno completo
+come suite. Si può affiancare in qualsiasi momento senza rebuild, e i due convivono senza
+problemi.
 
 ---
 
@@ -505,3 +536,44 @@ che fanno lo stesso mestiere. Tenuto **Dependabot**, rimosso Renovate:
 Due file che fanno lo stesso lavoro, uno dei quali silenziosamente inerte, sono una trappola per
 chi riapre il repo fra qualche mese. Renovate resterebbe preferibile in un monorepo con molti
 ecosistemi o volendo l'automerge nativo: non è il nostro caso.
+
+---
+
+## D-031
+### Il tag `rakuos` punta alla variante **-v3** (userspace x86-64-v3)
+**Stato:** ACCETTATA · **Data:** 2026-08-20
+
+**Contesto — la valutazione di luglio è invecchiata.** A luglio RakuOS era classificato
+"progetto giovane, rischioso" ([D-008](#d-008)). Verificato il 2026-08-20, non lo è più:
+
+- ha **migrato da GitHub a GitLab**, e le immagini da `ghcr.io` a **`quay.io`** (è questo il
+  "progetto morto e rinato" che si ricordava: ha cambiato casa, non è morto)
+- build **quotidiane** (l'ultima poche ore prima di questa verifica)
+- **33 immagini** pubblicate: `base` / `cosmic` / `gnome` / `kde` / `niri` / `gamescope`,
+  ciascuna × NVIDIA × `-v3` / `-v4`
+
+**Decisione:** `build-variants.yml` costruisce il tag `fraos:rakuos` da
+`quay.io/rakuos/rakuos-base-nvidia-v3:latest` invece della variante generica.
+
+**Cos'è `-v3`:** non è solo il kernel CachyOS, è **tutto lo userspace ricompilato** per il
+livello di istruzioni `x86-64-v3` (AVX2, BMI2, FMA). L'i7-8700K (Coffee Lake) è esattamente
+x86-64-v3: la variante `-v4` richiede AVX-512, che quella CPU non ha. Quindi `-v3` è il massimo
+sfruttabile su questo hardware, e provare la generica non avrebbe mostrato la differenza vera.
+
+**Cosa NON cambia:** resta un tag di **prova**, non la default.
+- il guadagno misurato per uso dev/browser/container è **~zero** ([D-008](#d-008)); i benefici di
+  BORE e delle patch CachyOS si vedono su frametime nei giochi e reattività del desktop sotto
+  carico CPU pesante — e il gaming sta su Windows
+- NVIDIA non firmato → richiede **Secure Boot OFF** dal BIOS, contro [D-015](#d-015)
+- il canale `latest` di RakuOS viene promosso a strappi (fermo al 2026-08-09 mentre `staging`
+  è quotidiano): meno collaudato del canale stable di Bazzite
+
+Si prova con un comando, senza reinstallare nulla e con la Bazzite che resta come rollback:
+```bash
+sudo bootc switch ghcr.io/0franky/fraos:rakuos   # poi reboot; per tornare: bootc rollback
+```
+
+**Scoperta collaterale:** esiste `quay.io/rakuos/rakuos-niri-nvidia-v3`, cioè CachyOS + NVIDIA +
+Niri già assemblati. Non lo usiamo come base — il valore di FraOS sta nel *nostro* layer (DMS,
+config, Tailscale, smartcard, VM, VS Code) e partire da una base che porta già un suo Niri
+significherebbe litigarci. Ma è la prova che quel filone è attivo e presidiato.

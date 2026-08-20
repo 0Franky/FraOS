@@ -1,5 +1,17 @@
 # FraOS — RUNBOOK DI INSTALLAZIONE
 
+> ## 🔌 LE DUE COSE DA NON DIMENTICARE
+>
+> **1. Quando installerai Windows (FASE 4), STACCA PRIMA IL CAVO SATA DEL CRUCIAL 120.**
+> L'installer di Windows, se trova una ESP già esistente su un altro disco, può scriverci
+> dentro il proprio bootloader e riordinare il boot: ti ritroveresti FraOS non più avviabile.
+> Con il cavo staccato, Windows crea la sua ESP sul SanDisk e i due sistemi restano
+> completamente indipendenti. Ricollega il cavo a installazione finita. ([D-019](DECISIONS.md#d-019))
+>
+> **2. Nel wipe si toccano SOLO i due SSD. L'HDD da 1 TB non si formatta mai:** è il porto
+> sicuro dove sta il backup. Nell'installer seleziona il disco a mano, mai "usa tutto il
+> disco". ([D-017](DECISIONS.md#d-017))
+
 > Procedura completa dal PC-Windows-attuale al PC-FraOS. **Da seguire in ordine.**
 > Le scelte dietro ogni passo: [D-017](DECISIONS.md#d-017) backup · [D-019](DECISIONS.md#d-019) dual boot ·
 > [D-020](DECISIONS.md#d-020) percorso di installazione · [D-021](DECISIONS.md#d-021) bootloader

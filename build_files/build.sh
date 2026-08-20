@@ -100,6 +100,22 @@ dnf -y install nautilus kitty mpv gnome-system-monitor gnome-calculator loupe
 # NOTE FraOS: gnome-terminal NON installato (kitty e' il terminale).
 #             obs-studio NON installato (scelta esplicita).
 
+# Visual Studio Code (repo ufficiale Microsoft).
+# BAKATO, non Flatpak, di proposito: la versione sandboxed fa attrito esattamente
+# con quello che serve qui (devcontainer, podman, terminale integrato che deve
+# vedere l'host). E' la stessa scelta che fa Bluefin-dx.
+rpm --import https://packages.microsoft.com/keys/microsoft.asc
+cat > /etc/yum.repos.d/vscode.repo << 'EOF'
+[code]
+name=Visual Studio Code
+baseurl=https://packages.microsoft.com/yumrepos/vscode
+enabled=1
+autorefresh=1
+gpgcheck=1
+gpgkey=https://packages.microsoft.com/keys/microsoft.asc
+EOF
+dnf -y install code
+
 ### ------------------------------------------------------------------ ###
 ### 5. Multimedia completo: RPM Fusion + ffmpeg/x264 (NO obs)           ###
 ### ------------------------------------------------------------------ ###
@@ -224,9 +240,18 @@ dnf -y remove waybar || true
 ###    Aggiungi app: una riga per id in flatpaks.list.                  ###
 ### ------------------------------------------------------------------ ###
 mkdir -p /usr/share/fraos
+# ID verificati uno per uno contro l'API di Flathub il 2026-08-20.
+# Per aggiungerne una: una riga per ID, push, e la trovi al prossimo utente nuovo.
+# Su un sistema gia' installato basta `flatpak install <id>` (nessun rebuild).
 cat > /usr/share/fraos/flatpaks.list << 'EOF'
 com.google.Chrome
 com.github.tchx84.Flatseal
+org.mozilla.firefox
+org.telegram.desktop
+com.discordapp.Discord
+org.videolan.VLC
+org.audacityteam.Audacity
+org.libreoffice.LibreOffice
 EOF
 
 cat > /usr/libexec/fraos-firstboot-flatpaks << 'EOF'
