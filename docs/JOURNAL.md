@@ -122,8 +122,32 @@ risolti**.
 Rimosso anche `renovate.json5` su richiesta di Fra dopo averne discusso: era inerte (app non
 installata) e duplicava Dependabot — vedi [D-030](DECISIONS.md#d-030).
 
-**Aperto a fine sessione:** esito della quarta build; rendere pubblico il package GHCR;
-decisioni [D-021](DECISIONS.md#d-021) (rEFInd) e [D-023](DECISIONS.md#d-023) (Flatpak).
+### 🎉 Quarta build: VERDE
+
+Run `32367884947`, 32m50s. `FraOS` esiste:
+
+```
+ghcr.io/0franky/fraos:latest
+sha256:38b54169004142074991764f4d09e82be79d5b46343404d8a733e186573d2ef1
+5,01 GB compressi · 130 layer · Bazzite GNOME NVIDIA su Fedora 44
+```
+
+Verificato dopo la build:
+- i tag `latest`, `bazzite`, `20260820` sono **pullabili senza credenziali** → `bootc switch`
+  funzionerà senza configurare autenticazione (il timore del package privato era infondato:
+  con repo pubblico GHCR eredita la visibilità)
+- **firma cosign valida**: `cosign verify --key cosign.pub` conferma
+  *"The signatures were verified against the specified public key"*, 4 firme, una per tag
+- la nuova configurazione CI funziona: Dependabot ha aperto **una sola PR raggruppata** con 7
+  update, e la build su quella PR è risultata `skipped` ([D-030](DECISIONS.md#d-030))
+
+**Bilancio della giornata:** progetto ripreso da fermo, allineato all'upstream, messo sotto git,
+documentato, corretto in sei punti (due dei quali avrebbero fatto fallire la build e quattro
+avrebbero dato un primo boot difettoso), pubblicato e costruito. Da qui si passa al backup e
+all'installazione vera.
+
+**Aperto a fine sessione:** backup pre-wipe (F3); decisioni [D-021](DECISIONS.md#d-021) (rEFInd) e
+[D-023](DECISIONS.md#d-023) (set Flatpak).
 
 ---
 

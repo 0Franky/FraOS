@@ -11,10 +11,31 @@
 | | |
 |---|---|
 | **Ultimo aggiornamento** | 2026-08-20 |
-| **Fase corrente** | **F2 — Pubblicazione repo e prima build CI** |
-| **Prossima azione** | Creare `0Franky/fraos` su GitHub, generare cosign key, push → far girare la prima build |
-| **Bloccante attivo** | Nessuna build è mai stata eseguita: i nomi pacchetto non sono ancora validati |
+| **Fase corrente** | **F3 — Backup pre-wipe** (poi F4, installazione) |
+| **Prossima azione** | Eseguire il backup di [`INSTALL.md` §FASE 1](INSTALL.md). L'immagine è pronta e scaricabile |
+| **Bloccante attivo** | Nessuno |
 | **Obiettivo finale** | Formattare il PC e usare FraOS come OS primario (dual boot con Windows) |
+
+## ✅ L'immagine esiste ed è verificata
+
+```bash
+sudo bootc switch ghcr.io/0franky/fraos:latest
+```
+
+| | |
+|---|---|
+| **Registry** | `ghcr.io/0franky/fraos` — pubblico, **pullabile senza credenziali** (verificato) |
+| **Tag** | `latest` · `latest.20260820` · `20260820` · `bazzite` |
+| **Digest** | `sha256:38b54169004142074991764f4d09e82be79d5b46343404d8a733e186573d2ef1` |
+| **Dimensione** | 5,01 GB compressi, 130 layer |
+| **Firma** | ✅ cosign verificata con `cosign.pub` (4 firme, una per tag) |
+| **Prima build verde** | run `32367884947`, 32m50s, 2026-08-20 |
+| **Base effettiva** | Bazzite GNOME NVIDIA su **Fedora 44** |
+
+Verifica della firma da qualsiasi macchina:
+```bash
+cosign verify --key cosign.pub ghcr.io/0franky/fraos:latest
+```
 
 ---
 
@@ -24,42 +45,46 @@
 |---|---|---|
 | **F0** | Design: hardware, requisiti, inventario tool, confronto basi | ✅ **CHIUSA** (2026-07-12) |
 | **F1** | Scaffold repo: Containerfile, build.sh, config, CI, ISO config | ✅ **CHIUSA** (2026-07-12) |
-| **F2** | Versionamento + pubblicazione + **prima build CI verde** | 🟡 **IN CORSO** |
-| **F3** | Backup pre-wipe (si esegue mentre la CI gira) | ⬜ Da fare |
+| **F2** | Versionamento + pubblicazione + **prima build CI verde** | ✅ **CHIUSA** (2026-08-20) |
+| **F3** | Backup pre-wipe | 🟡 **IN CORSO** |
 | **F4** | Installazione: ISO Bazzite → `bootc switch` → primo boot | ⬜ Da fare |
 | **F5** | Post-install: ArubaSign, Windows sul secondo disco, tuning | ⬜ Da fare |
 
 ---
 
-## F2 — Checklist operativa (fase corrente)
+## F3 — Backup pre-wipe (fase corrente)
 
-| # | Task | Stato | Note |
+La checklist operativa sta in **[`INSTALL.md` §FASE 1](INSTALL.md)**. In sintesi: l'HDD da 1 TB
+fa da porto sicuro e non viene toccato; doppia copia delle credenziali su cloud **e** USB; tutti
+i repo git pushati; poi si formattano solo i due SSD.
+
+Il punto di non ritorno è qui: prima di partire col wipe, l'immagine deve essere scaricabile
+(✅ lo è) e il backup completo.
+
+---
+
+## F2 — Chiusa il 2026-08-20 ✅
+
+Tutti i task completati: `git init`, documentazione, repo pubblico, cosign (chiave + secret +
+`cosign.pub`), push, **prima build verde**, immagine pubblica e firma verificata.
+
+**Sono servite quattro build.** Le tre fallite sono state rapide ed economiche, e ognuna ha
+lasciato una protezione permanente nel repo:
+
+| # | Durata | Errore | Correzione, e cosa impedisce che si ripeta |
 |---|---|---|---|
-| 1 | Allineare `build.sh` alle novità upstream | ✅ fatto (2026-08-20) | vedi [D-018](DECISIONS.md#d-018), [D-022](DECISIONS.md#d-022) |
-| 2 | `git init` + primo commit | ✅ fatto (2026-08-20) | storia del progetto ora versionata |
-| 3 | Documentazione persistente (`docs/`) | ✅ fatto (2026-08-20) | questo file + DECISIONS/JOURNAL/UPSTREAM/INSTALL |
-| 3b | **Validare i nomi pacchetto offline** | ✅ fatto (2026-08-20) | `tools/check-packages.sh` — 51/51 risolti. Ha trovato 4 problemi, 2 bloccanti → [D-025](DECISIONS.md#d-025)…[D-028](DECISIONS.md#d-028) |
-| 4 | Creare repo GitHub `0Franky/FraOS` | ✅ fatto (2026-08-20) | creato da Fra, poi reso **pubblico** → [D-024](DECISIONS.md#d-024). Il workflow minuscola il nome: immagine = `ghcr.io/0franky/fraos` |
-| 5 | Generare cosign key-pair | ✅ fatto (2026-08-20) | chiave senza password, generata in locale |
-| 6 | `gh secret set SIGNING_SECRET < cosign.key` | ⬜ | serve il repo. Senza questo la build **fallisce** allo step di firma |
-| 7 | Committare `cosign.pub`, mai `cosign.key` | ✅ fatto (2026-08-20) | `cosign.key` resta solo in locale, è in `.gitignore` |
-| 8 | Primo `git push` → build CI | ⬜ | **qui si valida tutto**: iterare finché è verde |
-| 9 | Rendere **pubblico il package GHCR** | ⬜ | al primo push il package nasce PRIVATO → `bootc switch` fallirebbe senza login |
-| 10 | Verificare che `bootc switch` risolva l'immagine | ⬜ | test da qualsiasi macchina: `skopeo inspect docker://ghcr.io/0franky/fraos:latest` |
+| 1 | 30s | `no FROM statement found` | `ARG BASE_IMAGE` spostato prima di ogni `FROM`, con il vincolo spiegato nel commento |
+| 2 | 3m16s | `exit status 126` | `chmod +x` sull'index **e** invocazione `bash /ctx/build.sh`, così il bit `+x` perso su Windows non può più bloccare la build |
+| 3 | 4m29s | `tuned-ppd` in conflitto con `power-profiles-daemon` | pacchetto rimosso, motivo scritto accanto alla riga |
+| 4 | **32m50s** | — | ✅ **verde** |
 
-### Cosa resta da validare alla prima build
-I **nomi** dei 51 pacchetti sono già verificati offline (`tools/check-packages.sh`, 51/51 risolti).
-Alla build CI resta da verificare quello che lo script non può vedere:
+I primi due erano attriti Windows→Linux; il terzo un conflitto di dipendenze. Nessuno era un
+nome di pacchetto sbagliato: quelli erano già stati eliminati dalla validazione offline
+([D-029](DECISIONS.md#d-029)), che ne aveva trovati quattro prima ancora di toccare la CI.
 
-- **risoluzione delle dipendenze** (conflitti fra pacchetti, `--allowerasing` che rimuove
-  qualcosa di importante)
-- **pacchetti forniti dai repo propri di Bazzite** (Terra, ublue), non coperti dalla validazione
-- gli **script** eseguiti a build time: `systemctl enable`, symlink di `display-manager.service`,
-  `glib-compile-schemas`, download dei Nerd Font
-- `bootc container lint` in coda al `Containerfile`
-
-**Prassi:** prima di ogni push che tocca `build.sh`, eseguire `./tools/check-packages.sh`
-([D-029](DECISIONS.md#d-029)). Costa 1 minuto contro i 20-40 di una build.
+**Prassi confermata:** prima di ogni push che tocca `build.sh`, eseguire
+`./tools/check-packages.sh` — 1 minuto contro i 30+ di una build. Ricorda però il suo limite:
+vede i nomi, non i conflitti.
 
 ---
 
