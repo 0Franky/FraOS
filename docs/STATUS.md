@@ -38,10 +38,10 @@
 | 1 | Allineare `build.sh` alle novità upstream | ✅ fatto (2026-08-20) | vedi [D-018](DECISIONS.md#d-018), [D-022](DECISIONS.md#d-022) |
 | 2 | `git init` + primo commit | ✅ fatto (2026-08-20) | storia del progetto ora versionata |
 | 3 | Documentazione persistente (`docs/`) | ✅ fatto (2026-08-20) | questo file + DECISIONS/JOURNAL/UPSTREAM/INSTALL |
-| 4 | Creare repo GitHub `0Franky/fraos` | 🟡 in corso (Fra) | **nome repo in minuscolo**, pubblico, Actions abilitate |
-| 5 | Generare cosign key-pair | ⬜ | `COSIGN_PASSWORD="" cosign generate-key-pair` |
-| 6 | `gh secret set SIGNING_SECRET < cosign.key` | ⬜ | senza questo la build **fallisce** allo step di firma |
-| 7 | Committare `cosign.pub`, mai `cosign.key` | ⬜ | `cosign.key` è in `.gitignore` |
+| 4 | Creare repo GitHub `0Franky/fraos` | 🟡 in corso (Fra) | **nome repo in minuscolo**, pubblico, **vuoto** (no README/licenza auto), Actions abilitate |
+| 5 | Generare cosign key-pair | ✅ fatto (2026-08-20) | chiave senza password, generata in locale |
+| 6 | `gh secret set SIGNING_SECRET < cosign.key` | ⬜ | serve il repo. Senza questo la build **fallisce** allo step di firma |
+| 7 | Committare `cosign.pub`, mai `cosign.key` | ✅ fatto (2026-08-20) | `cosign.key` resta solo in locale, è in `.gitignore` |
 | 8 | Primo `git push` → build CI | ⬜ | **qui si valida tutto**: iterare finché è verde |
 | 9 | Rendere **pubblico il package GHCR** | ⬜ | al primo push il package nasce PRIVATO → `bootc switch` fallirebbe senza login |
 | 10 | Verificare che `bootc switch` risolva l'immagine | ⬜ | test da qualsiasi macchina: `skopeo inspect docker://ghcr.io/0franky/fraos:latest` |
