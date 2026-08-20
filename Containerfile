@@ -1,16 +1,22 @@
 # FraOS Containerfile — adattato da MorrOS / ublue image-template.
 # Entry-point della build: parte da un'immagine base atomica e vi applica build.sh.
 
-# Stage "ctx": rende build_files/ referenziabile senza copiarlo nell'immagine finale
-FROM scratch AS ctx
-COPY build_files /
-
 # ------------------------------------------------------------------------- #
 # IMMAGINE BASE (default: Bazzite GNOME NVIDIA — scelta di MorrOS).
 # Override per i tag "prova" (bluefin/rakuos): --build-arg BASE_IMAGE=...
 # vedi .github/workflows/build-variants.yml
+#
+# ATTENZIONE: questo ARG deve stare PRIMA di qualsiasi FROM. Un ARG dichiarato
+# dopo un FROM appartiene a quello stage e NON e' visibile alle istruzioni FROM
+# successive: ${BASE_IMAGE} si espanderebbe a stringa vuota e la build muore con
+# "no FROM statement found" (successo il 2026-08-20, run 32366351579).
 # ------------------------------------------------------------------------- #
 ARG BASE_IMAGE="ghcr.io/ublue-os/bazzite-gnome-nvidia:stable"
+
+# Stage "ctx": rende build_files/ referenziabile senza copiarlo nell'immagine finale
+FROM scratch AS ctx
+COPY build_files /
+
 FROM ${BASE_IMAGE}
 
 # Alcuni repo COPR si basano sull'ID "fedora": normalizzalo.

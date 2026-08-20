@@ -59,7 +59,29 @@ Lo strumento è stato salvato come `tools/check-packages.sh` per riusarlo a ogni
 Fra ha reso il repo **pubblico** ([D-024](DECISIONS.md#d-024)): Actions gratis illimitate e package
 GHCR pullabile senza credenziali.
 
-**Aperto a fine sessione:** secret `SIGNING_SECRET`, primo push, prima build CI.
+**Terza parte — primo push e prima build**
+
+Repo pubblicato su `github.com/0Franky/FraOS`, `SIGNING_SECRET` caricato, primo push.
+La prima build **fallisce in 30 secondi** (run `32366351579`):
+
+```
+[1/2] STEP 3/3: ARG BASE_IMAGE="ghcr.io/ublue-os/bazzite-gnome-nvidia:stable"
+Error: determining starting point for build: no FROM statement found
+```
+
+Causa: nel `Containerfile` l'`ARG BASE_IMAGE` era scritto **dopo** `FROM scratch AS ctx`,
+quindi apparteneva a quello stage invece di essere globale; nel secondo stage
+`${BASE_IMAGE}` si espandeva a stringa vuota. MorrOS non ha il problema perché non usa
+affatto un ARG (base hardcoded): l'abbiamo introdotto noi per i tag varianti, mettendolo nel
+punto sbagliato. Corretto spostando l'ARG prima di ogni `FROM`, con il commento che spiega
+il perché così non ci ricasca nessuno.
+
+Nella stessa passata rimossi due **BOM UTF-8** (`Justfile` e `dot_config/niri/config.kdl`),
+residui della creazione dei file su Windows. Quello nel `config.kdl` era una mina: sarebbe
+finito in `/etc/skel` e avrebbe potuto rompere il parsing della config di Niri al primo boot.
+
+**Aperto a fine sessione:** esito della seconda build; rendere pubblico il package GHCR;
+decisioni [D-021](DECISIONS.md#d-021) (rEFInd) e [D-023](DECISIONS.md#d-023) (Flatpak).
 
 ---
 
