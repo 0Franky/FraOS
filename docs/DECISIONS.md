@@ -613,3 +613,53 @@ Blackwell, DGX Spark, Station and more"* — **la serie RTX 20 non è elencata**
 storicamente supportato la capability 7.0+, ma il supporto dello **Studio** su Turing non è
 confermato dalla documentazione. Va verificato sulla macchina; i ripieghi (Unsloth Core da
 script, oppure PEFT + bitsandbytes) sono in [`AI-STACK.md`](AI-STACK.md).
+
+### Auto-update dello stack AI: `fraos-ai-update` (2026-08-20)
+
+Conseguenza diretta della scelta di tenere lo stack fuori dall'immagine: il sistema si aggiorna
+da solo con `bootc upgrade`, ma vLLM e Unsloth **no** — resterebbero indietro in silenzio.
+
+Aggiunto quindi **`/usr/bin/fraos-ai-update`** (nell'immagine, insieme a una unit e un **timer
+utente settimanale abilitato via `/etc/skel`**, stesso meccanismo già usato per `dms.service`).
+
+| Aggiorna | Non aggiorna |
+|---|---|
+| le immagini container AI **già scaricate** (non ne scarica di nuove) | **`torch`**, di proposito |
+| i pacchetti del venv: `unsloth`, `transformers`, `trl`, `peft`, `accelerate`, `datasets`, `bitsandbytes`, `huggingface_hub` | qualsiasi cosa se lo stack non è installato: esce senza fare nulla |
+
+**Perché `torch` è escluso:** è il pacchetto più legato all'hardware (versione CUDA + driver), e
+aggiornarlo alla cieca è il modo classico per rompere l'ambiente — su una GPU **Turing** ancora
+di più, dato che le build recenti di PyTorch abbandonano progressivamente le architetture vecchie.
+Si aggiorna a mano, quando lo si decide.
+
+Lo script è idempotente e ha `--dry-run`. Log via journal utente:
+`journalctl --user -u fraos-ai-update`.
+
+### Regola: MAI `rpm-ostree install` per pacchetti Python
+
+Non è una preferenza stilistica. `rpm-ostree install` crea un **layer** sopra l'immagine, che
+va **ricomposto a ogni aggiornamento di sistema**: ogni `bootc upgrade` diventa più lento e più
+fragile, e se un pacchetto layered entra in conflitto con la nuova immagine **l'aggiornamento
+fallisce** e si resta indietro senza accorgersene. Con uno stack che cambia ogni poche settimane,
+significherebbe ricomporre il sistema di continuo.
+
+E non serve: la home è scrivibile, i venv funzionano, e PyTorch da pip si porta dietro il proprio
+runtime CUDA. `rpm-ostree install` resta valido solo per **provare al volo** un pacchetto di
+sistema; se convince, il posto giusto è una riga in `build_files/build.sh`.
+
+### Nota tecnica: bfloat16 su Turing non è sbloccabile
+
+Domanda emersa in sessione: è un blocco software, come il ray tracing che NVIDIA ha abilitato
+sulle GTX 10xx via driver? **No, è silicio.** I Tensor Core di Turing (2ª gen) supportano
+FP16/INT8/INT4/INT1; **BF16 e TF32 arrivano con Ampere** (3ª gen). Sul chip TU102 le unità che
+moltiplicano matrici in bf16 non esistono: non c'è flag, vBIOS o patch al driver che possa
+aggiungere un circuito non stampato.
+
+Il paragone col ray tracing è calzante ma porta alla conclusione opposta: su Pascal, DXR girava
+**in emulazione** sugli shader CUDA, 3-10× più lento. Emulare bf16 sarebbe ugualmente possibile e
+ugualmente inutile — più lento del fp16 nativo, che sulla 2080 Ti gira sui Tensor Core veri.
+(Diverso il caso dei blocchi *artificiali*, tipo il P2P riattivato sulle RTX 4090 da driver
+modificati: lì il silicio c'era ed era il driver a inibirlo.)
+
+In pratica: per l'**inferenza** fp16 è equivalente; per il **fine-tuning** serve fp16 **con loss
+scaling** (`fp16=True` nei `TrainingArguments`, mai `bf16=True`).

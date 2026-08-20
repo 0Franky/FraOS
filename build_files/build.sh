@@ -239,6 +239,55 @@ cp -rf /ctx/dot_config/kitty/. /etc/skel/.config/kitty/
 dnf -y remove waybar || true
 
 ### ------------------------------------------------------------------ ###
+### 8b. Auto-update dello stack AI (che vive FUORI dall'immagine)       ###
+###                                                                     ###
+###    Il sistema si aggiorna con `bootc upgrade`, ma vLLM/PyTorch/     ###
+###    Unsloth stanno di proposito fuori dall'immagine (vedi            ###
+###    docs/AI-STACK.md, D-032): senza questo, resterebbero indietro    ###
+###    in silenzio. Timer UTENTE settimanale, abilitato via /etc/skel.  ###
+###    Aggiorna solo cio' che esiste gia'; se non usi lo stack AI non   ###
+###    fa nulla e non scarica nulla.                                    ###
+### ------------------------------------------------------------------ ###
+install -Dm755 /ctx/fraos-ai-update /usr/bin/fraos-ai-update
+
+cat > /usr/lib/systemd/user/fraos-ai-update.service << 'EOF'
+[Unit]
+Description=FraOS — aggiorna lo stack AI in user-space (vLLM, Unsloth)
+Documentation=file:///usr/share/doc/fraos/AI-STACK.md
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/fraos-ai-update
+# Non deve mai bloccare il login o rallentare la sessione
+Nice=10
+IOSchedulingClass=idle
+EOF
+
+cat > /usr/lib/systemd/user/fraos-ai-update.timer << 'EOF'
+[Unit]
+Description=FraOS — controllo settimanale degli aggiornamenti dello stack AI
+
+[Timer]
+OnCalendar=weekly
+# Non parte all'istante del login: aspetta che la sessione si sia calmata
+RandomizedDelaySec=30m
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+EOF
+
+# Abilita il timer per i nuovi utenti (stesso meccanismo usato per dms.service)
+mkdir -p /etc/skel/.config/systemd/user/timers.target.wants
+ln -sf /usr/lib/systemd/user/fraos-ai-update.timer \
+       /etc/skel/.config/systemd/user/timers.target.wants/fraos-ai-update.timer
+
+# La guida allo stack AI viaggia con l'immagine: e' consultabile offline,
+# anche da un sistema appena installato senza rete.
+install -Dm644 /ctx/docs/AI-STACK.md /usr/share/doc/fraos/AI-STACK.md
+
+### ------------------------------------------------------------------ ###
 ### 9. First-boot Flatpak (app GUI: Chrome, Flatseal, ...)              ###
 ###    GUI grosse -> Flatpak (non bakate). Installate al primo boot.    ###
 ###    Aggiungi app: una riga per id in flatpaks.list.                  ###

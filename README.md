@@ -61,6 +61,9 @@ Il README spiega **come si usa** FraOS. Il resto sta in `docs/`:
 | **Bump** (ricostruzione su base+pacchetti aggiornati) | automatico ogni giorno (cron in `build.yml`); manuale: *Run workflow* |
 | **Aggiungere un pacchetto system** | aggiungi `dnf -y install X` in `build_files/build.sh` → push → `bootc upgrade` |
 | Provare un pacchetto al volo (temporaneo) | `rpm-ostree install X` sulla macchina (poi, se ok, mettilo in `build.sh`) |
+| CLI user-space | `brew install X` |
+| App GUI | `flatpak install X` |
+| **Roba Python (torch, vLLM, …)** | **mai** `rpm-ostree`: venv nella home o container — vedi [docs/AI-STACK.md](docs/AI-STACK.md) |
 
 ## Provare tutte e 3 le basi (una sola installazione)
 

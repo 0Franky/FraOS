@@ -13,9 +13,14 @@
 # ------------------------------------------------------------------------- #
 ARG BASE_IMAGE="ghcr.io/ublue-os/bazzite-gnome-nvidia:stable"
 
-# Stage "ctx": rende build_files/ referenziabile senza copiarlo nell'immagine finale
+# Stage "ctx": rende build_files/ referenziabile senza copiarlo nell'immagine finale.
+# Ci mettiamo anche docs/, cosi' build.sh puo' installare la guida dello stack AI
+# in /usr/share/doc/fraos/ senza doverne tenere una copia duplicata in build_files/.
+# Consultabile offline: utile su un sistema appena installato, prima ancora di
+# avere la rete configurata.
 FROM scratch AS ctx
 COPY build_files /
+COPY docs /docs
 
 FROM ${BASE_IMAGE}
 

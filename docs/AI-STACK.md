@@ -14,13 +14,51 @@ generico: è vecchia rispetto a **tre feature precise** che lo stack AI moderno 
 
 | Feature | Richiede | 2080 Ti | Conseguenza pratica |
 |---|---|---|---|
-| **bfloat16** | Ampere (8.0+) | ❌ | Tutto va forzato a **float16**. Bf16 ha più range dinamico: in fp16 alcuni training divergono e serve loss scaling |
+| **bfloat16** | Ampere (8.0+) | ❌ | Tutto va forzato a **float16**. Bf16 ha più range dinamico: in fp16 alcuni training divergono e serve loss scaling. **È un limite di silicio, non aggirabile** — vedi sotto |
 | **FlashAttention 2** | Ampere (8.0+) | ❌ | vLLM ripiega su altri backend attention: funziona, ma più lento e con più VRAM per il contesto |
 | **VRAM** | — | **11 GB** | È questo il tetto vero. Un 7B in fp16 vuole ~14 GB: **non ci sta**. Servono modelli quantizzati |
 
 **Quello che invece c'è:** compute capability 7.5 è **esplicitamente supportata da vLLM**
 (verificato nel `CMakeLists.txt` upstream: `CUDA_SUPPORTED_ARCHS` include `7.5` in tutte le
 varianti di build). Non è una GPU tagliata fuori, è una GPU con dei paletti.
+
+### bfloat16: perché non si può sbloccare
+
+Domanda legittima: è un blocco software, come il ray tracing che NVIDIA ha "abilitato" sulle
+GTX 10xx via driver? **No. È silicio.**
+
+I **Tensor Core** sono unità di calcolo fisiche, e ogni generazione ne supporta un elenco fisso
+di formati:
+
+| Generazione | Formati supportati dai Tensor Core |
+|---|---|
+| **Turing (2ª gen)** — 2080 Ti | FP16, INT8, INT4, INT1 |
+| **Ampere (3ª gen)** — 30xx | FP16, **BF16**, **TF32**, INT8, INT4, FP64 |
+
+Su TU102 le unità che moltiplicano matrici in bf16 **non esistono**. Non c'è un flag da alzare:
+non c'è il circuito.
+
+**Il paragone col ray tracing regge, ma porta alla conclusione opposta.** Quando NVIDIA ha
+abilitato DXR sulle GTX 10xx (2019), non ha "sbloccato" niente: ha fatto girare il ray tracing
+sugli shader CUDA generici, in emulazione. Risultato: 3-10× più lento delle schede con RT core
+veri. Era una dimostrazione, non una feature usabile.
+
+Con bf16 varrebbe lo stesso: si può *emulare* in software (convertendo avanti e indietro), ma
+sarebbe **più lento del fp16 nativo**, che sulla 2080 Ti gira sui Tensor Core veri. Si pagherebbe
+per andare più piano.
+
+**Diverso è il caso dei blocchi artificiali**, dove l'hardware c'è e il driver lo inibisce — come
+il P2P sulle RTX 4090, riattivato da driver modificati della community. Lì il silicio c'era.
+Qui no: nessun vBIOS, nessun firmware, nessuna patch al driver può aggiungere un'unità di calcolo
+che non è stata stampata sul chip.
+
+**La buona notizia:** per l'**inferenza** fp16 va benissimo, e la differenza è quasi sempre
+irrilevante. Il vantaggio di bf16 (esponente a 8 bit, stesso range dinamico di fp32) conta
+soprattutto in **training**, dove i gradienti possono andare in overflow o underflow. Per questo:
+
+- **inferenza (vLLM)** → `--dtype half` e via, nessuna rinuncia pratica
+- **fine-tuning (Unsloth/PEFT)** → fp16 **con loss scaling** (`GradScaler`, o `fp16=True` nei
+  `TrainingArguments`: lo gestiscono loro). Mai impostare `bf16=True`: fallisce e basta
 
 ### Cosa ci gira, realisticamente
 
@@ -99,6 +137,57 @@ Se preferisci l'isolamento pieno:
 ```bash
 distrobox create --name ai --image nvidia/cuda:12.6.0-devel-ubuntu24.04 --nvidia
 distrobox enter ai
+```
+
+---
+
+## ⚠️ Le due regole d'oro
+
+### 1. MAI `rpm-ostree install` per roba Python
+
+```bash
+rpm-ostree install python3-torch     # ← NO. Mai.
+pip install torch                    # ← nemmeno questo, fuori da un venv
+```
+
+**Perché è un errore serio, non uno stilistico:** `rpm-ostree install` crea un *layer* sopra
+l'immagine. Quel layer va **ricomposto a ogni aggiornamento del sistema**, quindi:
+
+- ogni `bootc upgrade` diventa più lento e più fragile
+- se un pacchetto layered entra in conflitto con la nuova immagine, **l'aggiornamento fallisce**
+  e resti indietro senza accorgertene
+- lo stack Python cambia ogni poche settimane: staresti ricomponendo il sistema di continuo
+- e soprattutto: **non serve**. La home è scrivibile, i venv funzionano perfettamente, e PyTorch
+  installato da pip si porta dietro il proprio runtime CUDA
+
+`rpm-ostree install` va usato solo per **provare al volo** un pacchetto di sistema; se convince,
+il posto giusto è una riga in `build_files/build.sh`.
+
+### 2. Lo stack AI si aggiorna da sé — ma `torch` no
+
+Il sistema si aggiorna con `bootc upgrade` (immagine ricostruita ogni notte dalla CI). Lo stack
+AI, stando fuori dall'immagine, resterebbe indietro in silenzio: per questo c'è
+**`fraos-ai-update`**, incluso nell'immagine, con un **timer utente settimanale già abilitato**.
+
+```bash
+fraos-ai-update --dry-run                    # cosa farebbe, senza toccare niente
+fraos-ai-update                              # aggiorna adesso
+systemctl --user status fraos-ai-update.timer
+journalctl --user -u fraos-ai-update         # cosa ha fatto l'ultima volta
+systemctl --user disable fraos-ai-update.timer   # per spegnerlo
+```
+
+**Cosa aggiorna:** solo ciò che esiste già — le immagini container AI che hai già scaricato e i
+pacchetti del venv (`unsloth`, `transformers`, `trl`, `peft`, `accelerate`, `datasets`,
+`bitsandbytes`, `huggingface_hub`). Se non usi lo stack AI non fa nulla e non scarica nulla.
+
+**`torch` è escluso di proposito.** È il pacchetto più delicato: è legato alla versione di CUDA e
+al driver, e aggiornarlo alla cieca è il modo classico per ritrovarsi l'ambiente rotto — su una
+GPU Turing ancora di più, perché le build recenti di PyTorch abbandonano progressivamente le
+architetture vecchie. Si aggiorna a mano, quando lo decidi tu:
+
+```bash
+~/.local/share/fraos-ai/venv/bin/pip install -U torch
 ```
 
 ---

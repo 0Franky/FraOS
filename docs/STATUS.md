@@ -33,6 +33,10 @@ sudo bootc switch ghcr.io/0franky/fraos:latest
 | **Prima build verde** | run `32367884947`, 32m50s, 2026-08-20 |
 | **Base effettiva** | Bazzite GNOME NVIDIA su **Fedora 44** |
 
+**Manutenzione automatica:** il sistema si aggiorna con `bootc upgrade` (immagine ricostruita
+ogni notte dalla CI); lo stack AI, che sta fuori dall'immagine, con `fraos-ai-update` e il suo
+timer utente settimanale ([`AI-STACK.md`](AI-STACK.md)).
+
 Verifica della firma da qualsiasi macchina:
 ```bash
 cosign verify --key cosign.pub ghcr.io/0franky/fraos:latest

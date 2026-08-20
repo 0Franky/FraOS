@@ -1,0 +1,93 @@
+#!/bin/bash
+#
+# fraos-ai-update — aggiorna lo stack AI, che su FraOS vive FUORI dall'immagine.
+#
+# PERCHE' ESISTE
+#   Il sistema si aggiorna da solo con `bootc upgrade` (l'immagine viene
+#   ricostruita ogni notte dalla CI). Ma vLLM, PyTorch e Unsloth stanno di
+#   proposito fuori dall'immagine — vedi docs/AI-STACK.md e la decisione D-032 —
+#   quindi nessuno li aggiornerebbe: resterebbero indietro in silenzio.
+#
+# COSA FA (e cosa NON fa)
+#   Aggiorna SOLO cio' che esiste gia':
+#     - le immagini container AI che hai gia' scaricato (non ne scarica di nuove)
+#     - il venv Python dello stack, se c'e'
+#   Se non usi lo stack AI, non fa niente e non scarica niente.
+#
+#   NON aggiorna `torch`: e' il pacchetto piu' delicato dello stack, legato alla
+#   versione di CUDA e al driver. Aggiornarlo alla cieca e' il modo classico per
+#   ritrovarsi un ambiente rotto. Va fatto a mano, consapevolmente:
+#     ~/.local/share/fraos-ai/venv/bin/pip install -U torch
+#
+# USO
+#   fraos-ai-update              aggiorna
+#   fraos-ai-update --dry-run    mostra cosa farebbe, senza toccare nulla
+#
+#   Gira anche da solo una volta a settimana: il timer utente e' gia' abilitato.
+#     systemctl --user status  fraos-ai-update.timer
+#     systemctl --user disable fraos-ai-update.timer   # per spegnerlo
+#     journalctl --user -u fraos-ai-update             # per vedere cosa ha fatto
+#
+set -uo pipefail
+
+VENV="${FRAOS_AI_VENV:-$HOME/.local/share/fraos-ai/venv}"
+DRY=0
+[ "${1:-}" = "--dry-run" ] && DRY=1
+
+log()  { printf '[fraos-ai-update] %s\n' "$*"; }
+run()  { if [ "$DRY" = 1 ]; then printf '[dry-run] %s\n' "$*"; else "$@"; fi; }
+
+did_something=0
+
+# --------------------------------------------------------------------------- #
+# 1. Immagini container gia' presenti in locale
+# --------------------------------------------------------------------------- #
+if command -v podman >/dev/null 2>&1; then
+  mapfile -t imgs < <(podman images --format '{{.Repository}}:{{.Tag}}' 2>/dev/null \
+    | grep -viE '<none>' \
+    | grep -iE 'vllm|unsloth|nvidia/cuda|text-generation-inference|huggingface' \
+    | sort -u)
+
+  if [ "${#imgs[@]}" -gt 0 ]; then
+    log "immagini AI da aggiornare: ${#imgs[@]}"
+    for img in "${imgs[@]}"; do
+      log "  pull $img"
+      run podman pull "$img" >/dev/null 2>&1 || log "  ! fallito (lo salto): $img"
+      did_something=1
+    done
+  else
+    log "nessuna immagine AI presente in locale, salto i container"
+  fi
+fi
+
+# --------------------------------------------------------------------------- #
+# 2. Venv Python dello stack (Unsloth e compagnia)
+# --------------------------------------------------------------------------- #
+if [ -x "$VENV/bin/python" ]; then
+  # torch volutamente ESCLUSO: vedi l'intestazione
+  PKGS="unsloth unsloth_zoo transformers trl peft accelerate datasets bitsandbytes huggingface_hub"
+  log "aggiorno il venv: $VENV"
+
+  if [ -x "$VENV/bin/uv" ]; then
+    # shellcheck disable=SC2086
+    run "$VENV/bin/uv" pip install --python "$VENV/bin/python" -U $PKGS \
+      || log "  ! qualche pacchetto non si e' aggiornato"
+  else
+    run "$VENV/bin/python" -m pip install -q -U pip >/dev/null 2>&1
+    # shellcheck disable=SC2086
+    run "$VENV/bin/python" -m pip install -q -U $PKGS \
+      || log "  ! qualche pacchetto non si e' aggiornato"
+  fi
+  did_something=1
+
+  if [ "$DRY" = 0 ]; then
+    tv=$("$VENV/bin/python" -c 'import torch; print(torch.__version__)' 2>/dev/null || echo "assente")
+    log "  torch resta a: $tv  (aggiornalo a mano se serve)"
+  fi
+else
+  log "nessun venv in $VENV, salto la parte Python"
+fi
+
+# --------------------------------------------------------------------------- #
+[ "$did_something" = 0 ] && log "niente da fare: lo stack AI non risulta installato"
+log "fatto."
