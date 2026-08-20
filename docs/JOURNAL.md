@@ -80,7 +80,25 @@ Nella stessa passata rimossi due **BOM UTF-8** (`Justfile` e `dot_config/niri/co
 residui della creazione dei file su Windows. Quello nel `config.kdl` era una mina: sarebbe
 finito in `/etc/skel` e avrebbe potuto rompere il parsing della config di Niri al primo boot.
 
-**Aperto a fine sessione:** esito della seconda build; rendere pubblico il package GHCR;
+La **seconda build** supera il `FROM`, scarica la base e muore a 3m16s su:
+
+```
+Error: building at STEP "... /ctx/build.sh": while running runtime: exit status 126
+```
+
+`126` = comando trovato ma non eseguibile: `build.sh` era committato con mode `100644`.
+Git su Windows non registra il bit di esecuzione. Corretto con
+`git update-index --chmod=+x`, e in più il `Containerfile` ora invoca `bash /ctx/build.sh`
+invece di `/ctx/build.sh`: lavorando da Windows il bit `+x` è fragile e non deve poter
+rompere di nuovo la build.
+
+> **Nota di metodo.** I primi due fallimenti (`no FROM statement found`, `exit status 126`)
+> sono entrambi **attriti Windows→Linux**, non errori di contenuto: la validazione offline dei
+> pacchetti non poteva vederli, perché non riguardano *cosa* installiamo ma *come* il file
+> arriva nel container. Sono anche entrambi a costo bassissimo (30s e 3m di CI), perché
+> falliscono prima delle fasi lente.
+
+**Aperto a fine sessione:** esito della terza build; rendere pubblico il package GHCR;
 decisioni [D-021](DECISIONS.md#d-021) (rEFInd) e [D-023](DECISIONS.md#d-023) (Flatpak).
 
 ---

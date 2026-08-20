@@ -36,12 +36,17 @@ RUN --mount=type=cache,dst=/var/cache \
     /usr/bin/systemctl preset brew-update.timer && \
     /usr/bin/systemctl preset brew-upgrade.timer
 
-# Esegue lo script di build
+# Esegue lo script di build.
+# Invocato tramite `bash` e non come `/ctx/build.sh`: il repo si edita da Windows,
+# dove il bit di esecuzione non esiste e git lo perde facilmente. Senza questo,
+# la build muore con "exit status 126" (comando trovato ma non eseguibile) —
+# successo il 2026-08-20, run 32366635230. Il mode 100755 nell'index resta
+# comunque impostato, questa e' una cintura di sicurezza in piu'.
 RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
     --mount=type=cache,dst=/var/cache \
     --mount=type=cache,dst=/var/log \
     --mount=type=tmpfs,dst=/tmp \
-    /ctx/build.sh
+    bash /ctx/build.sh
 
 # Verifica finale dell'immagine bootc
 RUN bootc container lint
