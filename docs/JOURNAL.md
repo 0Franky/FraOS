@@ -35,7 +35,31 @@ più usabile, si formatta.
   provabile con `bootc switch` senza reinstallare. Guadagno reale ~zero per uso dev (misurato a luglio)
 - *"rEFInd me l'avevi controbattuto?"* → no, mai discusso. Ora valutato: [D-021](DECISIONS.md#d-021)
 
-**Aperto a fine sessione:** creazione repo GitHub (in corso, la fa Fra), cosign, prima build CI.
+**Seconda parte — validazione senza bruciare CI**
+
+Fra chiede di testare in locale prima di consumare minuti di CI. Docker Desktop non fa partire
+il daemon (GUI attiva, backend WSL muto) e in WSL manca `sudo` senza password → niente
+container. Ripiegato su un approccio migliore: **scaricare i metadati dei repository e
+interrogarli offline** (~25 MB invece di ~20 GB di immagine base).
+
+Risultato: **quattro problemi trovati prima del primo push**, due dei quali avrebbero fatto
+fallire la build:
+
+1. 🔴 `quickshell` e `dms-greeter` **non sono** nel COPR `avengemedia/dms` che il build.sh
+   aggiungeva (copiato da MorrOS): stanno in `avengemedia/danklinux` → [D-025](DECISIONS.md#d-025)
+2. 🔴 `iotop` **non esiste più** in Fedora 43, si chiama `iotop-c` → [D-027](DECISIONS.md#d-027)
+3. 🟡 tutti i companion DMS decisi a luglio erano spariti dallo scaffold, incluso
+   `material-symbols-fonts` senza cui la shell mostra quadratini; più `playerctl` e `swaylock`,
+   invocati dai bind di Niri ma non installati da nessuno → [D-026](DECISIONS.md#d-026)
+4. 🟡 il Nerd Font richiesto da `kitty.conf` non esiste nei repo Fedora → [D-028](DECISIONS.md#d-028)
+
+Lo strumento è stato salvato come `tools/check-packages.sh` per riusarlo a ogni modifica
+([D-029](DECISIONS.md#d-029)). Validazione finale: **51 pacchetti su 51 risolti**.
+
+Fra ha reso il repo **pubblico** ([D-024](DECISIONS.md#d-024)): Actions gratis illimitate e package
+GHCR pullabile senza credenziali.
+
+**Aperto a fine sessione:** secret `SIGNING_SECRET`, primo push, prima build CI.
 
 ---
 

@@ -36,6 +36,12 @@
 | [D-021](#d-021) | rEFInd | **PROPOSTA: no** | 2026-08-20 |
 | [D-022](#d-022) | Allineamento pacchetti all'upstream (agosto) | ACCETTATA | 2026-08-20 |
 | [D-023](#d-023) | Set Flatpak finale | **APERTA** | — |
+| [D-024](#d-024) | Repo GitHub **pubblico** | ACCETTATA | 2026-08-20 |
+| [D-025](#d-025) | Servono **due** COPR: `dms` **e** `danklinux` | ACCETTATA | 2026-08-20 |
+| [D-026](#d-026) | Ripristinati i companion DMS decisi a luglio | ACCETTATA | 2026-08-20 |
+| [D-027](#d-027) | `iotop` → `iotop-c` (non esiste più in F43) | ACCETTATA | 2026-08-20 |
+| [D-028](#d-028) | Nerd Font da release upstream pinnata | ACCETTATA | 2026-08-20 |
+| [D-029](#d-029) | Validazione pacchetti offline prima di ogni push | ACCETTATA | 2026-08-20 |
 
 ---
 
@@ -345,3 +351,117 @@ un secondo browser (Firefox/Brave), un player video (mpv è già bakato nativo),
 
 **Non è bloccante:** i Flatpak si installano anche a mano dopo, senza ricostruire l'immagine.
 Metterli in lista serve solo ad averli già pronti al primo boot.
+
+---
+
+## D-024
+### Repo GitHub pubblico
+**Stato:** ACCETTATA · **Data:** 2026-08-20
+
+Il repo era nato privato. Reso pubblico dopo aver visto i due costi:
+
+1. **Minuti CI:** su repo pubblici GitHub Actions è gratis e illimitato; su repo privati
+   consumi i 2.000 min/mese del piano Free. Con build da 20-40 minuti e un cron giornaliero
+   (~900 min/mese solo di bump) il margine per le iterazioni di debug sparisce
+2. **Installazione:** con repo privato il package GHCR nasce privato, e `bootc switch` avrebbe
+   richiesto credenziali in `/etc/ostree/auth.json` proprio nel momento più delicato
+   (PC appena formattato)
+
+Nel repo non c'è nulla di sensibile: è configurazione di sistema. La chiave privata cosign
+non è tracciata ([`.gitignore`](../.gitignore)).
+
+---
+
+## D-025
+### Servono DUE COPR: `avengemedia/dms` **e** `avengemedia/danklinux`
+**Stato:** ACCETTATA · **Data:** 2026-08-20
+
+**Bug bloccante trovato prima del primo push**, leggendo i repodata reali dei COPR:
+
+| COPR | Contiene |
+|---|---|
+| `avengemedia/dms` | `dms`, `dms-cli`, `dgop` |
+| `avengemedia/danklinux` | **`quickshell`**, **`dms-greeter`**, `matugen`, `cliphist`, `danksearch`, `material-symbols-fonts`, `qt6ct-kde`, `ghostty`, … |
+
+Lo scaffold copiava da MorrOS l'aggiunta del **solo** repo `dms`, e poi eseguiva
+`dnf -y install quickshell dms greetd dms-greeter`. Due di quei quattro pacchetti **non
+esistono in quel repo** → la build sarebbe morta lì, dopo ~20 minuti di CI.
+
+Le note di luglio avevano ragione fin dall'inizio ("COPR `avengemedia/danklinux`"): è lo
+scaffolding che ha seguito MorrOS invece delle nostre note.
+
+**Aggiunto anche** il runtime Qt (`qt6-qtwayland`, `qt6-qtdeclarative`, `qt6-qtmultimedia`,
+`qt6-qtsvg`): quickshell è un'applicazione Qt6/QML.
+
+---
+
+## D-026
+### Ripristinati i companion DMS decisi a luglio e mai finiti nello scaffold
+**Stato:** ACCETTATA · **Data:** 2026-08-20
+
+Le note di luglio elencavano i companion da bakare; lo scaffold ha seguito il `build.sh` di
+MorrOS e li ha persi tutti. Rimessi, tutti verificati esistenti:
+
+| Pacchetto | Senza di lui |
+|---|---|
+| **`material-symbols-fonts`** | l'interfaccia DMS mostra quadratini al posto delle icone |
+| `matugen` | niente colori dinamici estratti dal wallpaper |
+| `cliphist` | niente storico appunti |
+| `danksearch`, `dgop` | niente ricerca / monitor di sistema |
+| `wl-clipboard` | niente copia-incolla da riga di comando |
+| `brightnessctl`, `ddcutil` | niente controllo luminosità (anche su monitor esterni via DDC) |
+| `cava` | widget musica senza visualizzatore |
+| **`playerctl`** | i tasti multimediali della tastiera non fanno nulla |
+| **`swaylock`** | `Super+Alt+L` (blocco schermo) è un bind morto |
+| `qt6ct` | app Qt fuori tema |
+| `jetbrains-mono-fonts` + Nerd Font | `kitty.conf` chiede "JetBrainsMono Nerd Font" ([D-028](#d-028)) |
+
+`playerctl` e `swaylock` sono emersi rileggendo i bind in `dot_config/niri/config.kdl`: la
+config li invoca, ma nessuno li installava.
+
+Aggiunti anche i pezzi "da desktop" (`xdg-user-dirs`, `power-profiles-daemon`, `bluez`,
+`blueman`, `pavucontrol`, `accountsservice`, `cups-pk-helper`): su Bazzite ci sono già, ma
+servono per i tag `bluefin` e soprattutto `rakuos`, che partono da basi più minimali.
+
+---
+
+## D-027
+### `iotop` → `iotop-c`
+**Stato:** ACCETTATA · **Data:** 2026-08-20
+
+`iotop` **non esiste più** nei repo Fedora 43: è stato sostituito da `iotop-c` (la
+riscrittura in C). MorrOS installa ancora `iotop`. Secondo errore che avrebbe fatto fallire
+la build.
+
+---
+
+## D-028
+### Nerd Font dalla release upstream, versione pinnata
+**Stato:** ACCETTATA · **Data:** 2026-08-20
+
+`kitty.conf` (importata da MorrOS) chiede `JetBrainsMono Nerd Font`. In Fedora esiste solo
+`jetbrains-mono-fonts`, che è il font **non patchato**: senza i glifi Nerd, prompt e tab di
+kitty si riempiono di quadratini. Il COPR `che/nerd-fonts` non pubblica per Fedora 43.
+
+**Soluzione:** `jetbrains-mono-fonts` da Fedora + la variante patchata scaricata dalla release
+upstream `ryanoasis/nerd-fonts`, **con versione pinnata** (`v3.5.0`, del 2026-08-02) invece di
+`latest`: una build riproducibile non deve cambiare risultato perché a monte è uscita una
+release nuova. Per aggiornarla si cambia `NERD_FONTS_VER` in `build.sh`.
+
+---
+
+## D-029
+### Validazione dei pacchetti offline prima di ogni push
+**Stato:** ACCETTATA · **Data:** 2026-08-20
+
+Nato dall'esigenza di Fra di non bruciare minuti CI. Una build completa dura 20-40 minuti e
+muore alla prima riga `dnf install` con un nome sbagliato, senza dirti nulla sulle successive.
+
+**`tools/check-packages.sh`** scarica solo i *metadati* dei repository (~25 MB: Fedora
+Everything + updates, i tre COPR) e verifica offline che ogni pacchetto richiesto da
+`build.sh` esista. Gira in ~1 minuto e ha già intercettato [D-025](#d-025), [D-026](#d-026),
+[D-027](#d-027), [D-028](#d-028) — quattro problemi, di cui due bloccanti, a costo zero.
+
+**Regola:** eseguirlo prima di ogni push che tocchi `build.sh`.
+Limite: verifica che il *nome* esista, non che le dipendenze si risolvano. Non sostituisce la
+build, ma elimina l'errore di gran lunga più frequente.

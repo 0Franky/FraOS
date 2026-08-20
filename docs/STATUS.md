@@ -38,7 +38,8 @@
 | 1 | Allineare `build.sh` alle novità upstream | ✅ fatto (2026-08-20) | vedi [D-018](DECISIONS.md#d-018), [D-022](DECISIONS.md#d-022) |
 | 2 | `git init` + primo commit | ✅ fatto (2026-08-20) | storia del progetto ora versionata |
 | 3 | Documentazione persistente (`docs/`) | ✅ fatto (2026-08-20) | questo file + DECISIONS/JOURNAL/UPSTREAM/INSTALL |
-| 4 | Creare repo GitHub `0Franky/fraos` | 🟡 in corso (Fra) | **nome repo in minuscolo**, pubblico, **vuoto** (no README/licenza auto), Actions abilitate |
+| 3b | **Validare i nomi pacchetto offline** | ✅ fatto (2026-08-20) | `tools/check-packages.sh` — 51/51 risolti. Ha trovato 4 problemi, 2 bloccanti → [D-025](DECISIONS.md#d-025)…[D-028](DECISIONS.md#d-028) |
+| 4 | Creare repo GitHub `0Franky/FraOS` | ✅ fatto (2026-08-20) | creato da Fra, poi reso **pubblico** → [D-024](DECISIONS.md#d-024). Il workflow minuscola il nome: immagine = `ghcr.io/0franky/fraos` |
 | 5 | Generare cosign key-pair | ✅ fatto (2026-08-20) | chiave senza password, generata in locale |
 | 6 | `gh secret set SIGNING_SECRET < cosign.key` | ⬜ | serve il repo. Senza questo la build **fallisce** allo step di firma |
 | 7 | Committare `cosign.pub`, mai `cosign.key` | ✅ fatto (2026-08-20) | `cosign.key` resta solo in locale, è in `.gitignore` |
@@ -46,11 +47,19 @@
 | 9 | Rendere **pubblico il package GHCR** | ⬜ | al primo push il package nasce PRIVATO → `bootc switch` fallirebbe senza login |
 | 10 | Verificare che `bootc switch` risolva l'immagine | ⬜ | test da qualsiasi macchina: `skopeo inspect docker://ghcr.io/0franky/fraos:latest` |
 
-### Cosa la prima build deve validare
-Nomi pacchetto mai verificati, tutti in `build_files/build.sh`:
-`niri` · `dms` · `dms-greeter` · `quickshell` · `xwayland-satellite` · `podman-docker` · `podman-compose` · `bibata-cursor-themes` · `android-tools` · `iperf3`
+### Cosa resta da validare alla prima build
+I **nomi** dei 51 pacchetti sono già verificati offline (`tools/check-packages.sh`, 51/51 risolti).
+Alla build CI resta da verificare quello che lo script non può vedere:
 
-Se un `dnf install` fallisce, la Action lo segnala con la riga esatta → si corregge e si ri-pusha.
+- **risoluzione delle dipendenze** (conflitti fra pacchetti, `--allowerasing` che rimuove
+  qualcosa di importante)
+- **pacchetti forniti dai repo propri di Bazzite** (Terra, ublue), non coperti dalla validazione
+- gli **script** eseguiti a build time: `systemctl enable`, symlink di `display-manager.service`,
+  `glib-compile-schemas`, download dei Nerd Font
+- `bootc container lint` in coda al `Containerfile`
+
+**Prassi:** prima di ogni push che tocca `build.sh`, eseguire `./tools/check-packages.sh`
+([D-029](DECISIONS.md#d-029)). Costa 1 minuto contro i 20-40 di una build.
 
 ---
 

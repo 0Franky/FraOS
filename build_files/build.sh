@@ -50,7 +50,7 @@ dnf -y install libvirt qemu-kvm virt-manager virt-viewer
 dnf -y install \
   flatpak-builder \
   wlr-randr \
-  iotop sysstat \
+  iotop-c sysstat \
   lxqt-openssh-askpass lxpolkit \
   parallel just \
   tmux \
@@ -61,6 +61,17 @@ dnf -y install \
 # Networking diagnostics + Android/adb (allineati a MorrOS 557a52d, 2026-08-19;
 # ktls-utils volutamente escluso). iperf3 = test banda, android-tools = adb/fastboot.
 dnf -y install iperf3 android-tools
+
+# Pezzi "da desktop" che su Bazzite ci sono gia' (GNOME completo), ma che
+# elenchiamo esplicitamente: le basi alternative dei tag `bluefin` e soprattutto
+# `rakuos` sono piu' minimali, e Niri da solo non porta nulla di tutto questo.
+dnf -y install \
+  xdg-user-dirs xdg-user-dirs-gtk xdg-utils \
+  power-profiles-daemon \
+  bluez blueman \
+  pavucontrol \
+  accountsservice \
+  cups-pk-helper
 
 # Networking / VPN: OpenVPN (+ GUI NetworkManager) e WireGuard
 dnf -y install NetworkManager-openvpn NetworkManager-openvpn-gnome wireguard-tools
@@ -107,12 +118,60 @@ curl -Lo /etc/yum.repos.d/peterwu.repo \
   https://copr.fedorainfracloud.org/coprs/peterwu/rendezvous/repo/fedora-$(rpm -E %fedora)/peterwu-rendezvous-fedora-$(rpm -E %fedora).repo
 dnf -y install bibata-cursor-themes
 
+# --- Font ---------------------------------------------------------------
+# kitty.conf chiede "JetBrainsMono Nerd Font": la versione PATCHATA con i glifi
+# non esiste nei repo Fedora, va presa dalla release upstream. Senza, kitty
+# ripiega su un font di sistema e i glifi del prompt diventano quadratini.
+dnf -y install jetbrains-mono-fonts
+NERD_FONTS_VER="v3.5.0"
+curl -fsSL -o /tmp/JetBrainsMono.tar.xz \
+  "https://github.com/ryanoasis/nerd-fonts/releases/download/${NERD_FONTS_VER}/JetBrainsMono.tar.xz"
+mkdir -p /usr/share/fonts/jetbrains-mono-nerd
+tar -xJf /tmp/JetBrainsMono.tar.xz -C /usr/share/fonts/jetbrains-mono-nerd
+rm -f /tmp/JetBrainsMono.tar.xz
+fc-cache -f /usr/share/fonts/jetbrains-mono-nerd
+
+# --- Theming Qt (le app GTK seguono gia' il tema di sistema) -------------
+dnf -y install qt6ct
+
 ### ------------------------------------------------------------------ ###
-### 7. DankMaterialShell (DMS) + greetd + DankGreeter (come MorrOS)     ###
+### 7. DankMaterialShell (DMS) + greetd + DankGreeter                   ###
+###                                                                     ###
+###    SERVONO DUE COPR DISTINTI (verificato il 2026-08-20 leggendo i    ###
+###    repodata di fedora-43-x86_64):                                    ###
+###      avengemedia/dms        -> dms, dms-cli, dgop                    ###
+###      avengemedia/danklinux  -> quickshell, dms-greeter, matugen,     ###
+###                                cliphist, danksearch,                 ###
+###                                material-symbols-fonts                ###
+###    MorrOS aggiunge solo il primo: con quello `dnf install quickshell ###
+###    dms-greeter` NON risolve. Non copiare quel pezzo da lui.          ###
 ### ------------------------------------------------------------------ ###
-curl --output-dir "/etc/yum.repos.d/" \
-  --remote-name "https://copr.fedorainfracloud.org/coprs/avengemedia/dms/repo/fedora-$(rpm -E %fedora)/avengemedia-dms-fedora-$(rpm -E %fedora).repo"
+for copr in dms danklinux; do
+  curl --output-dir "/etc/yum.repos.d/" --remote-name \
+    "https://copr.fedorainfracloud.org/coprs/avengemedia/${copr}/repo/fedora-$(rpm -E %fedora)/avengemedia-${copr}-fedora-$(rpm -E %fedora).repo"
+done
+
+# Runtime Qt: quickshell (su cui gira DMS) e' un'app Qt6/QML
+dnf -y install qt6-qtwayland qt6-qtdeclarative qt6-qtmultimedia qt6-qtsvg
+
 dnf -y install quickshell dms greetd dms-greeter --allowerasing
+
+# Companion di DMS: li USA ma non li porta con se'.
+#   matugen                -> colori dinamici dal wallpaper
+#   material-symbols-fonts -> le ICONE della shell (senza, l'interfaccia e' piena di quadratini)
+#   cliphist               -> storico appunti
+#   danksearch, dgop       -> ricerca e monitor di sistema
+#   wl-clipboard           -> copia/incolla da CLI
+#   brightnessctl, ddcutil -> luminosita' (laptop / monitor esterni via DDC)
+#   cava                   -> visualizzatore audio del widget musica
+dnf -y install matugen material-symbols-fonts cliphist danksearch dgop
+dnf -y install wl-clipboard brightnessctl ddcutil cava
+
+# Comandi richiesti dai bind in dot_config/niri/config.kdl: senza questi,
+# quelle scorciatoie sono morte (verificato leggendo la config, 2026-08-20).
+#   playerctl -> tasti multimediali play/pausa/avanti/indietro
+#   swaylock  -> Super+Alt+L (blocco schermo)
+dnf -y install playerctl swaylock
 
 # Login manager: DankGreeter che lancia Niri
 mkdir -p /etc/greetd/
