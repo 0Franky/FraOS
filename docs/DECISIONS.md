@@ -465,3 +465,31 @@ Everything + updates, i tre COPR) e verifica offline che ogni pacchetto richiest
 **Regola:** eseguirlo prima di ogni push che tocchi `build.sh`.
 Limite: verifica che il *nome* esista, non che le dipendenze si risolvano. Non sostituisce la
 build, ma elimina l'errore di gran lunga più frequente.
+
+---
+
+## D-030
+### CI a rumore minimo: niente build su PR di Dependabot, varianti e ISO solo on-demand
+**Stato:** ACCETTATA · **Data:** 2026-08-20
+
+**Contesto:** al primo push, Dependabot ha aperto una PR per ogni Action da aggiornare, e
+**ogni PR lanciava una build completa** da 20-40 minuti. Su repo pubblico non si paga
+([D-024](#d-024)), ma è rumore che copre i segnali veri. Rivedendo i trigger sono emerse anche
+due incoerenze fra quanto deciso a luglio e quanto scritto nei workflow.
+
+**Deciso:**
+
+| Workflow | Prima | Dopo | Perché |
+|---|---|---|---|
+| `build.yml` | build su ogni PR, comprese quelle di Dependabot | le PR di Dependabot **non** costruiscono (`if:` sul job); le PR umane sì | una PR che sposta un pin di Action non giustifica 30 min di runner. La verifica arriva dal cron giornaliero dopo il merge, e sulla macchina c'è `bootc rollback` |
+| `dependabot.yml` | una PR per **ogni** Action | **una sola PR raggruppata**, settimanale, max 2 aperte | è il raggruppamento a togliere il rumore, non la frequenza. Gli aggiornamenti di sicurezza ignorano lo schedule e arrivano subito comunque |
+| `build-variants.yml` | cron **settimanale** (bluefin + rakuos) | solo `workflow_dispatch` | il cron contraddiceva sia il commento in testa al file sia la decisione di luglio ([D-009](#d-009), on-demand): ogni lunedì costruiva due immagini da ~20 GB mai richieste |
+| `build-disk.yml` | `workflow_dispatch` + `pull_request` con `paths` che iniziano per `./` | solo `workflow_dispatch` | quei `paths` non matchano mai (GitHub non accetta il prefisso `./`): codice morto che sembrava attivo. L'ISO serve on-demand, vedi [D-020](#d-020) |
+
+**Resta invariato** il cron giornaliero di `build.yml`: è il bump ([D-014](#d-014)), ed è quello
+che tiene aggiornata l'immagine che gira sul PC.
+
+**Nota:** il repo contiene sia `.github/dependabot.yml` sia `.github/renovate.json5`, che fanno
+lo stesso mestiere. Renovate però richiede l'installazione della sua GitHub App e non risulta
+installata (tutte le PR aperte sono di Dependabot), quindi `renovate.json5` è **inerte**.
+Va tenuto uno solo dei due — decisione da prendere, per ora nessuno dei due dà fastidio.

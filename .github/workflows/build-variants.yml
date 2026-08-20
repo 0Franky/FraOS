@@ -10,9 +10,12 @@
 #  rakuos  -> Secure Boot OFF (NVIDIA unsigned, kernel CachyOS) -> richiede toggle nel BIOS
 name: Build FraOS variants
 on:
+  # SOLO manuale (Actions -> Build FraOS variants -> Run workflow).
+  # Il cron settimanale che c'era qui e' stato rimosso il 2026-08-20: contraddiceva
+  # il commento qui sopra e la decisione di luglio (varianti on-demand), e ogni
+  # lunedi' costruiva due immagini da ~20 GB che nessuno aveva chiesto.
+  # Vedi docs/DECISIONS.md#d-030.
   workflow_dispatch:
-  schedule:
-    - cron: '35 10 * * 1'  # lunedì 10:35 UTC (settimanale)
 
 env:
   IMAGE_NAME: "${{ github.event.repository.name }}"

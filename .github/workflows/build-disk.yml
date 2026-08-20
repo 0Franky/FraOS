@@ -15,13 +15,11 @@ on:
         options:
           - amd64
           - arm64
-  pull_request:
-    branches:
-      - main
-    paths:
-      - './disk_config/disk.toml'
-      - './disk_config/iso.toml'
-      - './.github/workflows/build-disk.yml'
+  # Il trigger `pull_request` che c'era qui e' stato rimosso il 2026-08-20:
+  # i suoi `paths` iniziavano con './', sintassi che GitHub non fa mai matchare,
+  # quindi era codice morto che sembrava attivo. L'ISO serve solo on-demand
+  # (installiamo via ISO Bazzite ufficiale + bootc switch, docs/DECISIONS.md#d-020),
+  # e generarla costa parecchio: resta solo l'avvio manuale.
 
 env:
   IMAGE_NAME: ${{ github.event.repository.name }} # output of build.yml, keep in sync

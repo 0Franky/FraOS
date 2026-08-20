@@ -1,11 +1,25 @@
-# To get started with Dependabot version updates, you'll need to specify which
-# package ecosystems to update and where the package manifests are located.
-# Please see the documentation for all configuration options:
+# Aggiornamento automatico delle versioni delle GitHub Action.
+#
+# Configurato per fare RUMORE MINIMO (scelta del 2026-08-20, vedi
+# docs/DECISIONS.md#d-030):
+#   - `groups`  -> tutti i bump finiscono in UNA sola PR invece di una per action:
+#                  e' questo a togliere il rumore, non la frequenza
+#   - `weekly`  -> una PR raggruppata a settimana. NB: gli aggiornamenti di
+#                  SICUREZZA ignorano lo schedule e arrivano subito comunque
+#   - le PR di Dependabot NON fanno partire la build completa: vedi la condizione
+#     `if:` in .github/workflows/build.yml
+#
 # https://docs.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
-
 version: 2
 updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+    open-pull-requests-limit: 2
+    commit-message:
+      prefix: "chore(deps)"

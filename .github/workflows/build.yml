@@ -34,6 +34,11 @@ concurrency:
 jobs:
   build_push:
     name: Build and push image
+    # Le PR di Dependabot NON fanno partire una build completa: aggiornano solo il
+    # pin di una GitHub Action, e una build costa 20-40 minuti di runner. La verifica
+    # arriva comunque dal cron giornaliero subito dopo il merge, e sulla macchina
+    # c'e' sempre `bootc rollback`. Le PR umane invece vengono costruite normalmente.
+    if: ${{ !(github.event_name == 'pull_request' && github.actor == 'dependabot[bot]') }}
     runs-on: ubuntu-24.04
     permissions:
       contents: read
