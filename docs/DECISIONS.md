@@ -33,7 +33,7 @@
 | [D-018](#d-018) | GNOME resta installato + `portal-gnome` esplicito | ACCETTATA | 2026-08-20 |
 | [D-019](#d-019) | Dual boot con Windows reinstallato **dopo** FraOS | ACCETTATA | 2026-08-20 |
 | [D-020](#d-020) | Installazione via ISO Bazzite ufficiale + `bootc switch` | ACCETTATA | 2026-08-20 |
-| [D-021](#d-021) | rEFInd | **PROPOSTA: no** | 2026-08-20 |
+| [D-021](#d-021) | rEFInd: **non si installa** | ACCETTATA | 2026-08-20 |
 | [D-022](#d-022) | Allineamento pacchetti all'upstream (agosto) | ACCETTATA | 2026-08-20 |
 | [D-023](#d-023) | Set Flatpak finale + VS Code bakato | ACCETTATA | 2026-08-20 |
 | [D-024](#d-024) | Repo GitHub **pubblico** | ACCETTATA | 2026-08-20 |
@@ -44,6 +44,7 @@
 | [D-029](#d-029) | Validazione pacchetti offline prima di ogni push | ACCETTATA | 2026-08-20 |
 | [D-030](#d-030) | CI a rumore minimo + rimosso Renovate | ACCETTATA | 2026-08-20 |
 | [D-031](#d-031) | Tag `rakuos` → variante **-v3** (x86-64-v3) | ACCETTATA | 2026-08-20 |
+| [D-032](#d-032) | Stack AI (vLLM + Unsloth) fuori dall'immagine | ACCETTATA | 2026-08-20 |
 
 ---
 
@@ -306,13 +307,13 @@ Il workflow `build-disk.yml` resta nel repo, utile in futuro per installare su a
 ---
 
 ## D-021
-### rEFInd come boot manager
-**Stato:** **PROPOSTA — non installarlo** (in attesa di conferma di Fra) · **Data:** 2026-08-20
+### rEFInd come boot manager: NON si installa
+**Stato:** ACCETTATA · **Data:** 2026-08-20 (confermata da Fra)
 
 **Contesto:** rEFInd compare nelle note del 12/07 come dato di fatto, senza che ne sia mai stato
 discusso il costo. Con l'assetto deciso in [D-019](#d-019) la valutazione cambia.
 
-**Proposta: non installarlo**, almeno all'inizio.
+**Deciso: non si installa.**
 
 | Argomento | |
 |---|---|
@@ -577,3 +578,38 @@ sudo bootc switch ghcr.io/0franky/fraos:rakuos   # poi reboot; per tornare: boot
 Niri già assemblati. Non lo usiamo come base — il valore di FraOS sta nel *nostro* layer (DMS,
 config, Tailscale, smartcard, VM, VS Code) e partire da una base che porta già un suo Niri
 significherebbe litigarci. Ma è la prova che quel filone è attivo e presidiato.
+
+---
+
+## D-032
+### Stack AI locale: vLLM + Unsloth, **fuori** dall'immagine
+**Stato:** ACCETTATA · **Data:** 2026-08-20
+
+Fra ha scelto **vLLM** (inferenza) e **Unsloth Studio** (fine-tuning) al posto di Ollama.
+Dettagli operativi e comandi: [`AI-STACK.md`](AI-STACK.md).
+
+**Decisione:** nell'immagine non entra nulla dello stack Python/CUDA.
+
+| Nell'immagine | Fuori |
+|---|---|
+| `nvidia-container-toolkit` (già presente), driver NVIDIA dalla base, `podman`, `distrobox`, **`git-lfs`** (aggiunto oggi: i pesi HuggingFace viaggiano su LFS) | vLLM → container `vllm/vllm-openai` · Unsloth/PyTorch → venv nella home o distrobox |
+
+**Perché:** PyTorch, CUDA userspace e le librerie di inferenza cambiano ogni poche settimane.
+Metterli in un sistema immutabile significherebbe ricostruire l'immagine e riavviare il PC per
+ogni aggiornamento di una libreria. In container o in un venv nella home si aggiornano senza
+toccare il sistema — ed è esattamente il tipo di lavoro per cui bootc lascia la home scrivibile.
+Corollario: **non usare `rpm-ostree install` per pacchetti Python.**
+
+**Vincoli hardware verificati (RTX 2080 Ti = Turing, compute capability 7.5):**
+
+- **vLLM la supporta**: `7.5` compare in `CUDA_SUPPORTED_ARCHS` nel `CMakeLists.txt` upstream
+- **niente bfloat16** (richiede Ampere 8.0+) → serve sempre `--dtype half`
+- **niente FlashAttention 2** (richiede Ampere) → backend attention alternativi, più lenti
+- **11 GB di VRAM** è il tetto vero: un 7B in fp16 (~14 GB) non entra, servono modelli **AWQ/GPTQ
+  a 4 bit** (~5-6 GB)
+
+⚠️ **Rischio aperto su Unsloth Studio:** il suo README dichiara *"Training works on RTX 30/40/50,
+Blackwell, DGX Spark, Station and more"* — **la serie RTX 20 non è elencata**. Unsloth Core ha
+storicamente supportato la capability 7.0+, ma il supporto dello **Studio** su Turing non è
+confermato dalla documentazione. Va verificato sulla macchina; i ripieghi (Unsloth Core da
+script, oppure PEFT + bitsandbytes) sono in [`AI-STACK.md`](AI-STACK.md).

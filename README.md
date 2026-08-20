@@ -20,6 +20,7 @@ Il README spiega **come si usa** FraOS. Il resto sta in `docs/`:
 | [docs/JOURNAL.md](docs/JOURNAL.md) | Diario di bordo: cosa è successo in ogni sessione |
 | [docs/UPSTREAM.md](docs/UPSTREAM.md) | Cosa fa MorrOS, cosa recepiamo e cosa no |
 | [docs/INSTALL.md](docs/INSTALL.md) | Runbook: backup → installazione → primo boot → post-install |
+| [docs/AI-STACK.md](docs/AI-STACK.md) | vLLM e Unsloth su questa GPU: comandi, vincoli, cosa ci gira |
 | [NOTES.md](NOTES.md) | Archivio storico della sessione di design (non più aggiornato) |
 
 ---
@@ -115,6 +116,7 @@ disk_config/               # config ISO/disk (bootc-image-builder)
   build-variants.yml       # build on-demand bluefin/rakuos (prova le 3)
   build-disk.yml           # generazione ISO installabile
 Justfile                   # build/vm/iso in locale
-docs/                      # SSOT del progetto: STATUS, DECISIONS, JOURNAL, UPSTREAM, INSTALL
+docs/                      # SSOT: STATUS, DECISIONS, JOURNAL, UPSTREAM, INSTALL, AI-STACK
+tools/check-packages.sh    # valida i nomi pacchetto senza costruire (da lanciare prima di ogni push)
 NOTES.md                   # archivio storico della sessione di design
 ```

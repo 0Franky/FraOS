@@ -7,6 +7,7 @@
 > - **Quando / cosa è successo** in ogni sessione → [`JOURNAL.md`](JOURNAL.md)
 > - **Cosa fa l'upstream** (morrolinux/morros) → [`UPSTREAM.md`](UPSTREAM.md)
 > - **Come si installa** sul PC → [`INSTALL.md`](INSTALL.md)
+> - **Stack AI locale** (vLLM, Unsloth) → [`AI-STACK.md`](AI-STACK.md)
 
 | | |
 |---|---|
@@ -88,12 +89,10 @@ vede i nomi, non i conflitti.
 
 ---
 
-## Decisioni ancora APERTE (bloccano poco, ma vanno chiuse)
+## Decisioni aperte
 
-| ID | Cosa | Chi decide |
-|---|---|---|
-| [D-021](DECISIONS.md#d-021) | rEFInd sì/no → **proposta: NO** | Fra (da confermare) |
-| [D-023](DECISIONS.md#d-023) | Set Flatpak finale (ora solo Chrome + Flatseal) | Fra |
+**Nessuna.** Tutte e 32 le decisioni sono chiuse — le ultime due (rEFInd e set Flatpak) il
+2026-08-20. Da qui in avanti si esegue: backup, installazione, primo boot.
 
 ---
 
@@ -105,3 +104,5 @@ vede i nomi, non i conflitti.
 | `Mod+D` (launcher DMS) con IPC sbagliato | Correggere `dot_config/niri/config.kdl` e ri-pushare |
 | Niri non parte al primo boot | GNOME resta installato: da TTY `sudo systemctl stop greetd && sudo systemctl start gdm` ([D-018](DECISIONS.md#d-018)) |
 | Windows sovrascrive il boot di Linux | Installare Windows **con il cavo SATA del disco Linux staccato** ([D-019](DECISIONS.md#d-019)) |
+| **Unsloth Studio non supporta la RTX 2080 Ti** | Il suo README elenca RTX 30/40/50, non la serie 20. Ripieghi: Unsloth Core da script, oppure PEFT + bitsandbytes ([`AI-STACK.md`](AI-STACK.md), [D-032](DECISIONS.md#d-032)) |
+| vLLM: modelli 7B in fp16 non entrano negli 11 GB | Usare quantizzazione **AWQ/GPTQ 4-bit** e `--dtype half` (bfloat16 non esiste su Turing) |

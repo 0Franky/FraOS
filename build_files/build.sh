@@ -62,6 +62,10 @@ dnf -y install \
 # ktls-utils volutamente escluso). iperf3 = test banda, android-tools = adb/fastboot.
 dnf -y install iperf3 android-tools
 
+# git-lfs: i pesi dei modelli su HuggingFace viaggiano su Git LFS.
+# Serve allo stack AI (vLLM / Unsloth), vedi docs/AI-STACK.md.
+dnf -y install git-lfs
+
 # Pezzi "da desktop" che su Bazzite ci sono gia' (GNOME completo), ma che
 # elenchiamo esplicitamente: le basi alternative dei tag `bluefin` e soprattutto
 # `rakuos` sono piu' minimali, e Niri da solo non porta nulla di tutto questo.
@@ -252,6 +256,7 @@ com.discordapp.Discord
 org.videolan.VLC
 org.audacityteam.Audacity
 org.libreoffice.LibreOffice
+org.onlyoffice.desktopeditors
 EOF
 
 cat > /usr/libexec/fraos-firstboot-flatpaks << 'EOF'
