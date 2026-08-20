@@ -8,17 +8,26 @@
 # build_files/build.sh esista davvero da qualche parte. Gira in ~1 minuto.
 #
 # Uso:
-#   ./tools/check-packages.sh            # usa Fedora 43 (base Bazzite attuale)
-#   FEDORA_VERSION=44 ./tools/check-packages.sh
+#   ./tools/check-packages.sh             # Fedora 44 = quella della base Bazzite attuale
+#   FEDORA_VERSION=45 ./tools/check-packages.sh
+#
+# La versione va tenuta allineata alla base: i tag GHCR di Bazzite sono fuorvianti
+# (mostravano ancora "stable-43" quando la base era gia' su Fedora 44). Il modo
+# affidabile per saperlo e' leggere un log di build: i pacchetti hanno il suffisso
+# .fc44 / .fc45.
 #
 # Richiede: curl, zstd, awk, grep. Su Windows usare WSL o Git Bash + zstd.
 #
-# NOTA: verifica l'ESISTENZA del nome, non la risolubilità delle dipendenze.
-# Non sostituisce la build, ma intercetta l'errore di gran lunga più frequente.
+# LIMITI — cosa NON vede (e che quindi puo' ancora far fallire la build):
+#   - la RISOLUBILITA': verifica che il nome esista, non che si installi. Un
+#     conflitto fra pacchetti passa di qui indisturbato (es. power-profiles-daemon
+#     contro tuned-ppd, che ha fatto fallire la run 32367033127).
+#   - i pacchetti forniti dai repo PROPRI della base (Terra, ublue), non inclusi qui.
+# Non sostituisce la build: intercetta l'errore piu' frequente, non tutti.
 #
 set -uo pipefail
 
-FEDORA_VERSION="${FEDORA_VERSION:-43}"
+FEDORA_VERSION="${FEDORA_VERSION:-44}"
 ARCH="x86_64"
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 BUILD_SH="$REPO_ROOT/build_files/build.sh"
@@ -75,7 +84,9 @@ awk '{ line=$0
   | grep -E '^[[:space:]]*dnf -y install' \
   | sed 's/^[[:space:]]*dnf -y install//' \
   | tr -s ' ' '\n' \
-  | grep -vE '^$|^-|^https?:|^\|\||^true$|^\\$' \
+  `# scarta: vuoti, flag, URL, operatori di shell, e i frammenti prodotti dallo` \
+  `# split su spazi di "$(rpm -E %fedora)" nelle righe che installano da URL` \
+  | grep -vE '^$|^-|^https?:|^\|\||^true$|^\\$|^%|\.rpm$|^\$\(|^[A-Za-z_]+=' \
   | sort -u > "$WORK/richiesti.txt"
 
 echo "build.sh richiede $(wc -l < "$WORK/richiesti.txt") pacchetti"

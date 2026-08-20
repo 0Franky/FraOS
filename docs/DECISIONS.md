@@ -489,7 +489,19 @@ due incoerenze fra quanto deciso a luglio e quanto scritto nei workflow.
 **Resta invariato** il cron giornaliero di `build.yml`: è il bump ([D-014](#d-014)), ed è quello
 che tiene aggiornata l'immagine che gira sul PC.
 
-**Nota:** il repo contiene sia `.github/dependabot.yml` sia `.github/renovate.json5`, che fanno
-lo stesso mestiere. Renovate però richiede l'installazione della sua GitHub App e non risulta
-installata (tutte le PR aperte sono di Dependabot), quindi `renovate.json5` è **inerte**.
-Va tenuto uno solo dei due — decisione da prendere, per ora nessuno dei due dà fastidio.
+### Rimosso `renovate.json5` (stessa decisione, 2026-08-20)
+
+Il template ci aveva lasciato **sia** `.github/dependabot.yml` **sia** `.github/renovate.json5`,
+che fanno lo stesso mestiere. Tenuto **Dependabot**, rimosso Renovate:
+
+- Renovate richiede l'installazione della sua GitHub App, che **non è installata**: il file era
+  quindi completamente **inerte** (tutte le PR aperte erano di Dependabot)
+- L'unica cosa che avrebbe senso aggiornare in automatico oltre alle Action è l'**immagine base**,
+  ma usiamo il tag mobile `:stable` e il cron giornaliero ripulla già l'ultima versione da solo
+- Il file lasciato dal template conteneva per giunta una regola che **disabilitava esplicitamente**
+  gli aggiornamenti dei container (`"enabled": false, "matchDepTypes": ["container"]`): anche
+  installando l'app, non avrebbe fatto la cosa per cui poteva servire
+
+Due file che fanno lo stesso lavoro, uno dei quali silenziosamente inerte, sono una trappola per
+chi riapre il repo fra qualche mese. Renovate resterebbe preferibile in un monorepo con molti
+ecosistemi o volendo l'automerge nativo: non è il nostro caso.

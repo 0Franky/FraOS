@@ -65,9 +65,14 @@ dnf -y install iperf3 android-tools
 # Pezzi "da desktop" che su Bazzite ci sono gia' (GNOME completo), ma che
 # elenchiamo esplicitamente: le basi alternative dei tag `bluefin` e soprattutto
 # `rakuos` sono piu' minimali, e Niri da solo non porta nulla di tutto questo.
+#
+# NB: NIENTE power-profiles-daemon. Le basi ublue usano `tuned-ppd` (TuneD con
+# l'interfaccia di compatibilita' PPD), e i due pacchetti si escludono a vicenda:
+# entrambi forniscono `ppd-service`. Installarlo fa fallire l'intera transazione
+# con "conflicting requests" (successo il 2026-08-20, run 32367033127).
+# La gestione dei profili di alimentazione c'e' gia': e' tuned-ppd.
 dnf -y install \
   xdg-user-dirs xdg-user-dirs-gtk xdg-utils \
-  power-profiles-daemon \
   bluez blueman \
   pavucontrol \
   accountsservice \

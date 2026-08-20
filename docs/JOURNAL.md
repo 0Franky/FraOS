@@ -98,7 +98,31 @@ rompere di nuovo la build.
 > arriva nel container. Sono anche entrambi a costo bassissimo (30s e 3m di CI), perché
 > falliscono prima delle fasi lente.
 
-**Aperto a fine sessione:** esito della terza build; rendere pubblico il package GHCR;
+La **terza build** arriva molto più in là: supera cinque gruppi di `dnf install` (compreso
+`iotop-c`) e muore a 4m29s su un **conflitto vero**:
+
+```
+installed package tuned-ppd conflicts with ppd-service provided by power-profiles-daemon
+```
+
+`power-profiles-daemon` è uno dei pacchetti aggiunti oggi con [D-026](DECISIONS.md#d-026): le basi
+ublue usano `tuned-ppd`, che fornisce lo stesso servizio, e i due si escludono. Rimosso — la
+gestione dei profili di alimentazione c'era già.
+
+> Questo è precisamente il **limite dichiarato** della validazione offline: verifica che il nome
+> esista, non che la transazione si risolva. Il limite è ora scritto nell'intestazione di
+> `tools/check-packages.sh`, con questo caso come esempio.
+
+**Scoperta importante dallo stesso log:** la base non è su Fedora 43 ma su **Fedora 44** (i
+pacchetti hanno suffisso `.fc44`). I tag GHCR di Bazzite erano fuorvianti — mostravano ancora
+`stable-43`. Lo strumento di validazione ora punta a F44 di default, e l'intestazione spiega che
+il modo affidabile per saperlo è leggere un log di build. Rivalidato su F44: **73 pacchetti su 73
+risolti**.
+
+Rimosso anche `renovate.json5` su richiesta di Fra dopo averne discusso: era inerte (app non
+installata) e duplicava Dependabot — vedi [D-030](DECISIONS.md#d-030).
+
+**Aperto a fine sessione:** esito della quarta build; rendere pubblico il package GHCR;
 decisioni [D-021](DECISIONS.md#d-021) (rEFInd) e [D-023](DECISIONS.md#d-023) (Flatpak).
 
 ---
