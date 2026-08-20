@@ -1,0 +1,366 @@
+<title>FraOS — Piano tool e base</title>
+<style>
+  :root{
+    --bg:#f6f5f2; --surface:#ffffff; --surface-2:#faf9f6;
+    --ink:#1b1c1f; --muted:#696d74; --faint:#9a9ea6;
+    --line:#e6e4de; --line-strong:#d8d5cd;
+    --accent:#0f6e78; --accent-ink:#0b545c;
+    --cachy:#b4530c; --fedora:#2563eb; --bazzite:#6d3bd1;
+    --ok:#1a7d3f; --warn:#b4530c; --crit:#b5231f;
+    --sys:#0f6e78; --flat:#2563eb; --brew:#b4530c; --dbox:#7c3aed;
+    --shadow:0 1px 2px rgba(20,20,25,.05),0 6px 20px rgba(20,20,25,.05);
+    --radius:14px;
+    --mono:ui-monospace,"SFMono-Regular","Cascadia Code","JetBrains Mono","Consolas",monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --bg:#141518; --surface:#1c1e22; --surface-2:#202329;
+      --ink:#e9e8e4; --muted:#9aa0a8; --faint:#6c727a;
+      --line:#2c2f35; --line-strong:#3a3e45;
+      --accent:#41b7c1; --accent-ink:#63c9d1;
+      --cachy:#e2913f; --fedora:#6ea0ff; --bazzite:#a583ef;
+      --ok:#54c37a; --warn:#e2913f; --crit:#ef6b66;
+      --sys:#41b7c1; --flat:#6ea0ff; --brew:#e2913f; --dbox:#b18cf0;
+      --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.28);
+    }
+  }
+  :root[data-theme="light"]{
+    --bg:#f6f5f2; --surface:#ffffff; --surface-2:#faf9f6;
+    --ink:#1b1c1f; --muted:#696d74; --faint:#9a9ea6;
+    --line:#e6e4de; --line-strong:#d8d5cd;
+    --accent:#0f6e78; --accent-ink:#0b545c;
+    --cachy:#b4530c; --fedora:#2563eb; --bazzite:#6d3bd1;
+    --ok:#1a7d3f; --warn:#b4530c; --crit:#b5231f;
+    --sys:#0f6e78; --flat:#2563eb; --brew:#b4530c; --dbox:#7c3aed;
+    --shadow:0 1px 2px rgba(20,20,25,.05),0 6px 20px rgba(20,20,25,.05);
+  }
+  :root[data-theme="dark"]{
+    --bg:#141518; --surface:#1c1e22; --surface-2:#202329;
+    --ink:#e9e8e4; --muted:#9aa0a8; --faint:#6c727a;
+    --line:#2c2f35; --line-strong:#3a3e45;
+    --accent:#41b7c1; --accent-ink:#63c9d1;
+    --cachy:#e2913f; --fedora:#6ea0ff; --bazzite:#a583ef;
+    --ok:#54c37a; --warn:#e2913f; --crit:#ef6b66;
+    --sys:#41b7c1; --flat:#6ea0ff; --brew:#e2913f; --dbox:#b18cf0;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.28);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
+    line-height:1.6;-webkit-font-smoothing:antialiased;font-size:16px}
+  .wrap{max-width:940px;margin:0 auto;padding:clamp(20px,4vw,56px) clamp(16px,4vw,40px) 96px}
+  .eyebrow{font-family:var(--mono);font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--accent);font-weight:600}
+  h1{font-size:clamp(28px,5.4vw,42px);line-height:1.12;margin:.35em 0 .2em;font-weight:750;
+    letter-spacing:-.02em;text-wrap:balance}
+  .lede{font-size:clamp(16px,2.4vw,18.5px);color:var(--muted);max-width:62ch;text-wrap:pretty}
+  .meta{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:18px;font-family:var(--mono);
+    font-size:12.5px;color:var(--faint)}
+  .meta b{color:var(--muted);font-weight:600}
+  section{margin-top:clamp(38px,6vw,60px)}
+  h2{font-size:clamp(21px,3.4vw,27px);line-height:1.2;margin:0 0 6px;font-weight:720;
+    letter-spacing:-.015em;text-wrap:balance;display:flex;align-items:baseline;gap:12px}
+  h2 .n{font-family:var(--mono);font-size:14px;color:var(--accent);font-weight:600;flex:none}
+  .sub{color:var(--muted);margin:0 0 20px;max-width:64ch}
+  h3{font-size:16.5px;margin:26px 0 10px;font-weight:680;letter-spacing:-.01em}
+  p{margin:0 0 14px}
+  a{color:var(--accent-ink);text-underline-offset:3px}
+  code,.mono{font-family:var(--mono);font-size:.9em}
+  code{background:var(--surface-2);border:1px solid var(--line);border-radius:6px;
+    padding:.08em .38em;color:var(--ink)}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    padding:clamp(16px,2.6vw,24px);box-shadow:var(--shadow)}
+  .grid{display:grid;gap:14px}
+  @media(min-width:720px){.grid.c3{grid-template-columns:repeat(3,1fr)}}
+  .opt{position:relative;display:flex;flex-direction:column;gap:8px}
+  .opt.hi{border-color:color-mix(in srgb,var(--ok) 45%,var(--line))}
+  .opt .top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .opt h3{margin:0;font-size:16px}
+  .opt .k{font-family:var(--mono);font-size:12px;color:var(--muted);margin:0;word-break:break-all}
+  .opt ul{margin:6px 0 0;padding-left:1.05em}
+  .opt li{margin:3px 0;font-size:14px;color:var(--muted)}
+  .opt li b{color:var(--ink);font-weight:600}
+  .tag{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;
+    font-weight:600;letter-spacing:.03em;text-transform:uppercase;padding:3px 8px;border-radius:999px;
+    border:1px solid currentColor;white-space:nowrap}
+  .tag.rec{color:var(--ok)} .tag.alt{color:var(--fedora)} .tag.purist{color:var(--cachy)}
+  .rail{border-left:3px solid var(--accent);padding:2px 0 2px 16px;margin:18px 0}
+  .callout{background:var(--surface-2);border:1px solid var(--line);border-left:3px solid var(--warn);
+    border-radius:10px;padding:14px 16px;margin:18px 0}
+  .callout.good{border-left-color:var(--ok)}
+  .callout.info{border-left-color:var(--accent)}
+  .callout .h{font-weight:680;margin:0 0 4px;display:flex;align-items:center;gap:8px}
+  .scroll{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface);margin:6px 0}
+  table{border-collapse:collapse;width:100%;font-size:14px;min-width:560px}
+  th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+  thead th{font-family:var(--mono);font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;
+    color:var(--muted);font-weight:600;background:var(--surface-2);position:sticky;top:0}
+  tbody tr:last-child td{border-bottom:none}
+  th.axis,td.axis{font-weight:650;color:var(--ink);white-space:nowrap}
+  .col-rec{background:color-mix(in srgb,var(--ok) 5%,transparent)}
+  td .mono{color:var(--ink)}
+  td.c{text-align:center;font-variant-numeric:tabular-nums}
+  .pill{display:inline-block;font-family:var(--mono);font-size:11px;font-weight:600;padding:2px 8px;
+    border-radius:6px;border:1px solid transparent;white-space:nowrap}
+  .pill.sys{color:var(--sys);border-color:color-mix(in srgb,var(--sys) 40%,transparent);background:color-mix(in srgb,var(--sys) 9%,transparent)}
+  .pill.flat{color:var(--flat);border-color:color-mix(in srgb,var(--flat) 40%,transparent);background:color-mix(in srgb,var(--flat) 9%,transparent)}
+  .pill.brew{color:var(--brew);border-color:color-mix(in srgb,var(--brew) 40%,transparent);background:color-mix(in srgb,var(--brew) 9%,transparent)}
+  .pill.dbox{color:var(--dbox);border-color:color-mix(in srgb,var(--dbox) 40%,transparent);background:color-mix(in srgb,var(--dbox) 9%,transparent)}
+  .yes{color:var(--ok);font-weight:700} .no{color:var(--crit);font-weight:700} .part{color:var(--warn);font-weight:700}
+  .u-ok{color:var(--ok);font-weight:650} .u-opt{color:var(--warn);font-weight:650} .u-no{color:var(--crit);font-weight:650}
+  .legend{display:flex;flex-wrap:wrap;gap:8px 14px;margin:10px 2px 0;font-size:12.5px;color:var(--muted)}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .dot{width:9px;height:9px;border-radius:3px;flex:none}
+  ul.clean{margin:8px 0;padding-left:1.15em}
+  ul.clean li{margin:5px 0}
+  .status{display:grid;gap:10px}
+  @media(min-width:640px){.status{grid-template-columns:1fr 1fr}}
+  .chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}
+  .chip{font-family:var(--mono);font-size:12px;padding:4px 9px;border-radius:999px;
+    border:1px solid var(--line-strong);color:var(--muted);background:var(--surface)}
+  .chip.done{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 45%,transparent)}
+  .chip.open{color:var(--warn);border-color:color-mix(in srgb,var(--warn) 45%,transparent)}
+  hr{border:none;border-top:1px solid var(--line);margin:0}
+  .foot{margin-top:56px;color:var(--faint);font-size:13px;font-family:var(--mono)}
+  @media (prefers-reduced-motion:no-preference){a,.tag{transition:color .15s}}
+</style>
+
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">Piano FraOS · distro atomica custom</div>
+    <h1>FraOS — tool, base e dove va ogni cosa</h1>
+    <p class="lede">Documento per ragionarci con calma: la scelta della base (con il dettaglio tecnico di cosa cambia davvero), cosa usa <em>veramente</em> MorrOS, la compatibilità Linux/Windows, e dove finisce ogni programma su un sistema atomico.</p>
+    <div class="meta">
+      <span><b>Immagine</b> ghcr.io/0franky/fraos</span>
+      <span><b>Build</b> BlueBuild → GHCR</span>
+      <span><b>Desktop</b> Niri + DankMaterialShell</span>
+      <span><b>Boot</b> rEFInd</span>
+    </div>
+  </header>
+
+  <section>
+    <h2><span class="n">01</span> La decisione da prendere: la <em>base</em></h2>
+    <p class="sub">È l'unica cosa che blocca lo scaffolding. Tutto il resto (Niri+DMS, i tool, la CI) è identico su qualsiasi base. Qui sotto trovi <em>esattamente</em> cosa cambia, per decidere con cognizione.</p>
+
+    <div class="callout info">
+      <p class="h">🧩 Come funziona (30 secondi)</p>
+      <p style="margin:0">Un'immagine atomica = <b>base</b> (kernel + driver + sistema, mantenuta da altri) + il <b>nostro layer</b> (Niri+DMS, config, tool). Il desktop e i tool li mettiamo noi e sono <b>identici</b> su qualunque base. Quindi scegliere la base = scegliere solo tre cose: <b>kernel</b>, <b>come è gestito NVIDIA</b>, e <b>quanto è solida/mantenuta</b>. Se un domani la base non ti soddisfa, si cambia una riga <code>FROM</code> e il tuo desktop resta uguale.</p>
+    </div>
+
+    <div class="callout">
+      <p class="h">⚠️ Scoperta dall'inventario reale di MorrOS</p>
+      <p style="margin:0">La base che Morrolinux usa <b>oggi</b> non è CachyOS: è <b>Bazzite</b> (<code>ghcr.io/ublue-os/bazzite-gnome-nvidia:stable</code>). La riga per <code>rakuos-base-nvidia</code> nel suo repo è <b>commentata</b>. La "CachyOS" del video è superata dal repo attuale. Morro usa Bazzite perché lui gioca/streamma su Linux — profilo diverso dal tuo.</p>
+    </div>
+
+    <div class="grid c3" style="margin-top:8px">
+      <div class="card opt hi">
+        <div class="top"><h3>Bluefin-dx</h3><span class="tag rec">Consigliata</span></div>
+        <p class="k">ghcr.io/ublue-os/bluefin-dx-nvidia-open</p>
+        <ul>
+          <li>ublue <b>dev-oriented</b>: baka <b>il tuo stack</b> (Docker/podman, QEMU-libvirt, VS Code, devcontainer)</li>
+          <li>NVIDIA-open <b>firmato</b> → Secure Boot <b>ON</b></li>
+          <li>Backing fortissimo, battle-tested, <b>sealed images</b> (boot verificato)</li>
+          <li>Kernel Fedora standard — ma per il tuo uso <b>non perdi nulla</b> (vedi sotto)</li>
+        </ul>
+      </div>
+      <div class="card opt">
+        <div class="top"><h3>Bazzite</h3><span class="tag alt">Se giochi su Linux</span></div>
+        <p class="k">ghcr.io/ublue-os/bazzite-gnome-nvidia</p>
+        <ul>
+          <li>È ciò che usa MorrOS → Niri+DMS collaudati</li>
+          <li>Kernel <b>gaming/handheld</b> (patch Valve) — <b>non</b> CachyOS</li>
+          <li>NVIDIA firmato → Secure Boot <b>ON</b></li>
+          <li>Contro: stack gaming (Steam/Gamescope) <b>che tu non usi</b> = peso inutile</li>
+        </ul>
+      </div>
+      <div class="card opt">
+        <div class="top"><h3>RakuOS</h3><span class="tag purist">Purista CachyOS</span></div>
+        <p class="k">ghcr.io/rakuos/rakuos-base-nvidia</p>
+        <ul>
+          <li>Unico col <b>kernel CachyOS vero</b> (BORE, LTO)</li>
+          <li>Contro: progetto <b>giovane</b> (bus-factor)</li>
+          <li>Contro: NVIDIA <b>non firmato</b> → Secure Boot <b>OFF</b></li>
+        </ul>
+      </div>
+    </div>
+
+    <h3 style="margin-top:30px">Cosa cambia <em>effettivamente</em></h3>
+    <p style="color:var(--muted);margin-bottom:6px">Le uniche differenze reali tra le tre, verificate su fonti aggiornate (mid-2026):</p>
+    <div class="scroll">
+      <table>
+        <thead><tr><th class="axis">Asse</th><th class="col-rec">Bluefin-dx</th><th>Bazzite</th><th>RakuOS</th></tr></thead>
+        <tbody>
+          <tr><td class="axis">Kernel</td><td class="col-rec">Fedora standard</td><td>kernel-bazzite (Fedora + patch gaming/handheld Valve)</td><td><b>CachyOS vero</b> (BORE, x86-64-v3, LTO)</td></tr>
+          <tr><td class="axis">Guadagno reale<br><span style="font-weight:400;color:var(--muted)">per il TUO uso (dev/media, no gaming)</span></td><td class="col-rec">riferimento</td><td>~nullo (patch per giochi)</td><td><span class="part">~nullo</span> — si vede nei giochi/desktop sotto carico, <b>non</b> in compile/container/browser</td></tr>
+          <tr><td class="axis">NVIDIA</td><td class="col-rec">nvidia-open <b>firmato</b></td><td>nvidia-open <b>firmato</b></td><td>compilato ma <b>non firmato</b></td></tr>
+          <tr><td class="axis">Secure Boot</td><td class="col-rec"><span class="yes">ON</span> (enroll MOK 1 volta)</td><td><span class="yes">ON</span> (MOK)</td><td><span class="no">OFF</span> (o auto-firma manuale)</td></tr>
+          <tr><td class="axis">Cosa è già dentro</td><td class="col-rec"><b>stack dev</b> (Docker/podman, QEMU-libvirt, VS Code, devcontainer) = roba tua</td><td>stack <b>gaming</b> (Steam/Gamescope/MangoHud) = inutile per te</td><td>minimale</td></tr>
+          <tr><td class="axis">Solidità / rischio</td><td class="col-rec">ublue: grande, finanziato, battle-tested</td><td>ublue: idem</td><td><span class="part">piccolo progetto, bus-factor</span></td></tr>
+          <tr><td class="axis">DE di fallback</td><td class="col-rec">GNOME</td><td>GNOME</td><td>COSMIC/KDE/GNOME</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout">
+      <p class="h">🎯 Il punto onesto sul kernel</p>
+      <p style="margin:0">Il kernel CachyOS è affascinante, ma per quello che fai <b>tu</b> (compilare, container, browser, media) il guadagno misurabile è <b>circa zero</b>. I benefici di BORE/CachyOS si vedono nei <b>frametime dei giochi</b> e nella reattività desktop <b>sotto carico pesante</b> — non velocizzano un <code>make -j12</code> né una build di container. Quindi "più performance via kernel", nel tuo caso, <b>non è un argomento reale</b>. Meglio spendere la scelta su ciò che conta: tooling giusto, NVIDIA firmato, base solida.</p>
+    </div>
+
+    <div class="callout good">
+      <p class="h">🧭 La mia raccomandazione</p>
+      <p style="margin:0 0 8px"><b>Bluefin-dx-nvidia-open.</b> Il tuo uso è dev/media/general col gaming su Windows → Bluefin-dx baka <em>esattamente</em> i tool che userai (Docker/podman, QEMU-libvirt, VS Code, devcontainer = il tuo stack), tiene <b>Secure Boot ON</b> (più sicuro), ha il backing più forte, e rinuncia a ~nulla (il kernel CachyOS non ti darebbe benefici reali). <span style="color:var(--muted)">(Approfondendo i dettagli, la scelta si affina da Bazzite → Bluefin-dx.)</span></p>
+      <ul class="clean" style="margin:0">
+        <li><b>Vuoi il fallback DE in KDE</b> invece di GNOME? → <b>Aurora-dx</b> (gemello di Bluefin, base KDE).</li>
+        <li><b>Bazzite</b> ha senso solo se pensi di giocare <em>anche</em> su Linux.</li>
+        <li><b>RakuOS</b> solo se vuoi il CachyOS "purista" e accetti Secure Boot off + progetto giovane.</li>
+      </ul>
+      <p style="margin:8px 0 0"><b>Bonus semplicità:</b> con una base ublue stabile <b>non serve il tag "fallback"</b> (il rollback atomico copre gli update sfortunati) e <b>Secure Boot resta ON</b> → un'immagine sola, più semplice e più sicura.</p>
+    </div>
+    <p class="sub" style="margin-top:14px">👉 <b>Serve solo la tua scelta della base</b> (Bluefin-dx / Aurora-dx / Bazzite / RakuOS) e partiamo con lo scaffolding del repo.</p>
+  </section>
+
+  <section>
+    <h2><span class="n">02</span> Cosa usa <em>davvero</em> MorrOS</h2>
+    <p class="sub">Letto dal repo reale <code>morrolinux/morros</code> (aggiornato oggi), non dalla trascrizione. Niente Flatpak: mette tutto via RPM/COPR. Login con DankGreeter. Terminale <b>kitty</b>, shell resta <b>bash</b>.</p>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Cosa mette Morro</th><th>Per te</th><th>Nota</th></tr></thead>
+        <tbody>
+          <tr><td><span class="mono">niri · quickshell · dms · dms-greeter · greetd</span></td><td class="u-ok">Sì, core</td><td>Il desktop stesso. Base identica alla nostra.</td></tr>
+          <tr><td><span class="mono">kitty</span> (terminale)</td><td class="u-ok">Sì</td><td>La tua scelta "affidati a MorrOS". + <span class="mono">alacritty</span> (default niri).</td></tr>
+          <tr><td><span class="mono">libvirt · virt-manager · qemu-kvm</span></td><td class="u-ok">Sì</td><td>Coincide con la tua scelta KVM/QEMU. 👍</td></tr>
+          <tr><td><span class="mono">mpv · nautilus · loupe · seahorse</span></td><td class="u-ok">Sì</td><td>Player, file manager, viewer immagini, portachiavi.</td></tr>
+          <tr><td><span class="mono">nvidia-container-toolkit</span></td><td class="u-ok">Utile</td><td>GPU dentro i container (es. ollama/AI). Ti serve.</td></tr>
+          <tr><td><span class="mono">bibata-cursor-themes · pipewire</span></td><td class="u-ok">Sì</td><td>Cursori + audio (audio già nella base).</td></tr>
+          <tr><td><span class="mono">obs-studio · ffmpeg · x264</span></td><td class="u-opt">Opzionale</td><td>Registrazione/streaming schermo. Solo se ti serve.</td></tr>
+          <tr><td><span class="mono">iotop · sysstat · just · parallel</span></td><td class="u-opt">Opzionale</td><td>Utility sysadmin/dev. Carine, non essenziali.</td></tr>
+          <tr><td><span class="mono">gnome-terminal</span></td><td class="u-no">Ridondante</td><td>Hai già kitty. Lo saltiamo.</td></tr>
+          <tr><td><span class="mono">xdg-desktop-portal-wlr</span></td><td class="u-no">Sbagliato</td><td>⚠️ Niri è Smithay, non wlroots → noi usiamo <span class="mono">-gnome</span> (screencast corretto). Qui facciamo <b>meglio</b> di MorrOS.</td></tr>
+          <tr><td>config <span class="mono">kitty</span> nel repo</td><td class="u-no">Non cablato</td><td>Presente ma non copiato (bug loro). Ne teniamo conto.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="rail">
+      <b>Cosa MorrOS non ha e noi aggiungiamo</b> (dal tuo stack + best practice): <span class="mono">tailscale</span>, VPN <span class="mono">NetworkManager-openvpn</span>+<span class="mono">wireguard-tools</span>, firma digitale <span class="mono">pcsc-lite/opensc</span>+driver Aruba, <span class="mono">tmux</span>, portali <span class="mono">-gnome</span>, <span class="mono">gnome-keyring</span>, <span class="mono">xwayland-satellite</span>, Nerd Font + Material Symbols, companion DMS (<span class="mono">matugen/cliphist/…</span>).
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">03</span> Compatibilità: Linux / Windows / Entrambi</h2>
+    <p class="sub">Cosa può girare dove, così decidi cosa usare su Linux (primario), cosa tenere su Windows, cosa vive su entrambi. <span class="yes">●</span> nativo · <span class="part">◐</span> possibile ma scomodo · <span class="no">○</span> no.</p>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Programma</th><th class="c">Linux</th><th class="c">Windows</th><th>Dove conviene</th></tr></thead>
+        <tbody>
+          <tr><td>VS Code · Postman · browser</td><td class="c yes">●</td><td class="c yes">●</td><td>Entrambi (sync impostazioni)</td></tr>
+          <tr><td>Podman / Docker</td><td class="c yes">●</td><td class="c yes">●</td><td>Entrambi — su Linux <b>podman</b> nativo, su Win Docker Desktop</td></tr>
+          <tr><td>Tailscale</td><td class="c yes">●</td><td class="c yes">●</td><td>Entrambi</td></tr>
+          <tr><td>Node/bun · Python · .NET · Go · Flutter</td><td class="c yes">●</td><td class="c yes">●</td><td>Entrambi — dev primario su <b>Linux</b></td></tr>
+          <tr><td>AWS/Azure/kubectl CLI · Ollama</td><td class="c yes">●</td><td class="c yes">●</td><td>Entrambi</td></tr>
+          <tr><td>VM: KVM/QEMU</td><td class="c yes">●</td><td class="c no">○</td><td><b>Linux</b> (su Win useresti Hyper-V/VBox)</td></tr>
+          <tr><td>Firma digitale Aruba / CNS</td><td class="c part">◐</td><td class="c yes">●</td><td>Entrambi, ma su <b>Windows</b> è più liscia; su Linux via pcsc/opensc</td></tr>
+          <tr><td>Giochi (Steam/Proton)</td><td class="c part">◐</td><td class="c yes">●</td><td><b>Windows</b> — la tua macchina da gioco</td></tr>
+          <tr><td>OBS Studio · mpv · media</td><td class="c yes">●</td><td class="c yes">●</td><td>Entrambi</td></tr>
+          <tr><td>MS Office / Adobe (se usi)</td><td class="c no">○</td><td class="c yes">●</td><td><b>Windows</b> (su Linux solo web/LibreOffice)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">04</span> Dove va ogni tool su FraOS</h2>
+    <p class="sub">La regola dell'atomico: si baka nel <em>sistema</em> solo ciò che deve (daemon, moduli kernel, hardware, login). Tutto il resto NON richiede rebuild.</p>
+    <div class="legend">
+      <span><span class="dot" style="background:var(--sys)"></span> <b>System</b> = bakato (serve rebuild)</span>
+      <span><span class="dot" style="background:var(--flat)"></span> <b>Flatpak</b> = GUI</span>
+      <span><span class="dot" style="background:var(--brew)"></span> <b>Brew</b> = CLI utente</span>
+      <span><span class="dot" style="background:var(--dbox)"></span> <b>Distrobox</b> = ambienti dev</span>
+    </div>
+
+    <h3><span class="pill sys">System</span> &nbsp;bakato — da definire TUTTO ora (build unica)</h3>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Gruppo</th><th>Pacchetti</th></tr></thead>
+        <tbody>
+          <tr><td>Desktop Niri+DMS</td><td><span class="mono">niri · dms · quickshell · qt6-wayland · qt6-multimedia · matugen · cliphist · cava · dgop · wl-clipboard · brightnessctl · ddcutil</span></td></tr>
+          <tr><td>Sessione / portali</td><td><span class="mono">xdg-desktop-portal(+gtk,+gnome) · gnome-keyring · xwayland-satellite · nautilus · lxpolkit · xdg-user-dirs · seahorse</span></td></tr>
+          <tr><td>Login</td><td><span class="mono">greetd + dms-greeter</span> (come MorrOS) <b>oppure</b> GDM base — <em>da decidere</em></td></tr>
+          <tr><td>Terminale + font/tema</td><td><span class="mono">kitty · alacritty · jetbrains-mono-nerd-fonts · material-symbols · qt6ct · bibata-cursor-themes</span></td></tr>
+          <tr><td>Rete / VPN</td><td><span class="mono">tailscale</span> (+tailscaled) · <span class="mono">NetworkManager-openvpn(+gnome) · wireguard-tools</span></td></tr>
+          <tr><td>Virtualizzazione</td><td><span class="mono">qemu-kvm · libvirt-daemon-kvm · virt-manager · virt-viewer · virt-install</span> (+libvirtd, gruppo libvirt)</td></tr>
+          <tr><td>Firma / smart card</td><td><span class="mono">pcsc-lite · pcsc-tools · opensc</span> + driver PKCS#11 Aruba/Bit4id</td></tr>
+          <tr><td>Sistema / misc</td><td><span class="mono">power-profiles-daemon · bluez · blueman · pavucontrol · accountsservice · cups-pk-helper · nvidia-container-toolkit · tmux · iotop · just</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:6px;font-size:13.5px;color:var(--muted)"><b>Nota:</b> <span class="mono">podman</span> è già nella base. DMS fornisce già notifiche, lock, launcher, control-center e polkit → non li bakiamo doppi.</p>
+
+    <div class="status" style="margin-top:22px">
+      <div class="card">
+        <h3 style="margin-top:0"><span class="pill flat">Flatpak</span> &nbsp;GUI (aggiungibili senza rebuild)</h3>
+        <ul class="clean" style="font-size:14px;color:var(--muted)">
+          <li>Browser (Firefox / Brave / Chrome)</li>
+          <li>VS Code · Postman</li>
+          <li>OBS Studio (o system) · lettori extra</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3 style="margin-top:0"><span class="pill brew">Brew</span> &nbsp;CLI utente</h3>
+        <ul class="clean" style="font-size:14px;color:var(--muted)">
+          <li>kubectl · aws · az · gcloud</li>
+          <li>toolchain: node/bun · python · go (o via mise)</li>
+          <li>ripgrep · lazygit · gemini/copilot CLI</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3 style="margin-top:0"><span class="pill dbox">Distrobox</span> &nbsp;ambienti dev</h3>
+        <ul class="clean" style="font-size:14px;color:var(--muted)">
+          <li>Box per-linguaggio isolati</li>
+          <li>Roba che vuole apt/dnf/pacman</li>
+          <li>App Java (ArubaSign) se non AppImage</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3 style="margin-top:0">Container: <span class="mono" style="color:var(--ink)">podman</span></h3>
+        <p style="margin:0;font-size:14px;color:var(--muted)">Scelto al posto di Docker: già presente, <b>docker-compatibile</b> (compose incluso), nessun daemon che si pesta con SELinux. Distrobox è già nella base.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">05</span> Stato decisioni</h2>
+    <div class="status">
+      <div class="card">
+        <h3 style="margin-top:0;color:var(--ok)">✅ Deciso</h3>
+        <div class="chips">
+          <span class="chip done">Nome: FraOS</span>
+          <span class="chip done">GitHub: 0Franky</span>
+          <span class="chip done">BlueBuild + GHCR</span>
+          <span class="chip done">Niri + DMS</span>
+          <span class="chip done">rEFInd</span>
+          <span class="chip done">podman (no Docker)</span>
+          <span class="chip done">distrobox</span>
+          <span class="chip done">KVM/QEMU</span>
+          <span class="chip done">Tailscale</span>
+          <span class="chip done">tmux</span>
+          <span class="chip done">kitty + bash</span>
+          <span class="chip done">Dischi: Win→480, Linux→120, HDD dati</span>
+        </div>
+      </div>
+      <div class="card">
+        <h3 style="margin-top:0;color:var(--warn)">⏳ Da decidere</h3>
+        <div class="chips">
+          <span class="chip open">BASE: Bluefin-dx ★ / Aurora-dx / Bazzite / RakuOS</span>
+          <span class="chip open">Login: DankGreeter o GDM</span>
+          <span class="chip open">Set Flatpak finale</span>
+          <span class="chip open">ArubaSign: AppImage o Distrobox</span>
+        </div>
+        <p style="margin:12px 0 0;font-size:13.5px;color:var(--muted)">★ = mia raccomandazione. Con base ublue → Secure Boot <b>ON</b> e niente tag "fallback" (rollback basta). È la scelta che sblocca lo scaffolding del repo.</p>
+      </div>
+    </div>
+  </section>
+
+  <p class="foot">FraOS · piano di lavoro · leggi con calma e dimmi solo la scelta della base — al resto pensiamo dopo, un passo alla volta.</p>
+
+</div>

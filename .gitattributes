@@ -1,0 +1,14 @@
+# I file di questo repo finiscono dentro un'immagine Linux: SEMPRE line ending LF.
+# Con CRLF `build.sh` non parte nemmeno (/bin/bash^M: bad interpreter) e i file
+# .toml/.kdl/.conf copiati in /etc/skel arriverebbero sporchi.
+* text=auto eol=lf
+
+*.sh    text eol=lf
+*.yml   text eol=lf
+*.toml  text eol=lf
+*.kdl   text eol=lf
+*.conf  text eol=lf
+
+*.png binary
+*.jpg binary
+*.ico binary

@@ -1,0 +1,10 @@
+cosign.key
+_build_*
+output
+_build-*/**
+
+# artefatti locali
+scratchpad/
+*.log
+bash.exe.stackdump
+*.stackdump
