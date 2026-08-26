@@ -51,7 +51,7 @@ cosign verify --key cosign.pub ghcr.io/0franky/fraos:latest
 | **F0** | Design: hardware, requisiti, inventario tool, confronto basi | ✅ **CHIUSA** (2026-07-12) |
 | **F1** | Scaffold repo: Containerfile, build.sh, config, CI, ISO config | ✅ **CHIUSA** (2026-07-12) |
 | **F2** | Versionamento + pubblicazione + **prima build CI verde** | ✅ **CHIUSA** (2026-08-20) |
-| **F3** | Backup pre-wipe | 🟡 **IN CORSO** |
+| **F3** | Backup pre-wipe — [checklist](INSTALL.md) | 🟡 **IN CORSO** |
 | **F4** | Installazione: ISO Bazzite → `bootc switch` → primo boot | ⬜ Da fare |
 | **F5** | Post-install: ArubaSign, Windows sul secondo disco, tuning | ⬜ Da fare |
 
@@ -95,8 +95,16 @@ vede i nomi, non i conflitti.
 
 ## Decisioni aperte
 
-**Nessuna.** Tutte e 32 le decisioni sono chiuse — le ultime due (rEFInd e set Flatpak) il
-2026-08-20. Da qui in avanti si esegue: backup, installazione, primo boot.
+**Nessuna.** Tutte e 33 le decisioni sono chiuse. Da qui in avanti si esegue: backup,
+installazione, primo boot.
+
+**Assetto dischi (invertito il 2026-08-27, [D-033](DECISIONS.md#d-033)):**
+
+| Disco | Va | Nel wipe |
+|---|---|---|
+| SanDisk SSD 480 (`C:` oggi) | 🐧 **FraOS** | 🔴 formattato |
+| Crucial SSD 120 | 🪟 **Windows** | 🔴 formattato |
+| HDD 1 TB (`D:`) | dati, VM, Steam | 🟢 **mai toccato** |
 
 ---
 

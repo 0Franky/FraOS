@@ -45,6 +45,7 @@
 | [D-030](#d-030) | CI a rumore minimo + rimosso Renovate | ACCETTATA | 2026-08-20 |
 | [D-031](#d-031) | Tag `rakuos` → variante **-v3** (x86-64-v3) | ACCETTATA | 2026-08-20 |
 | [D-032](#d-032) | Stack AI (vLLM + Unsloth) fuori dall'immagine | ACCETTATA | 2026-08-20 |
+| [D-033](#d-033) | **Dischi invertiti**: FraOS sul 480, Windows sul 120 | ACCETTATA | 2026-08-27 |
 
 ---
 
@@ -279,8 +280,10 @@ Rimuovendo `gnome-shell` si porta via `xdg-desktop-portal-gnome` → **screen ca
 ### Dual boot, con Windows reinstallato **dopo** FraOS
 **Stato:** ACCETTATA · **Data:** 2026-08-20
 
-**Assetto:** FraOS sul **Crucial SSD 120 GB**, Windows sul **SanDisk SSD 480 GB**, HDD 1 TB
-condiviso e mai toccato. Ogni SSD ha la propria ESP → i due sistemi restano indipendenti.
+**Assetto:** ⚠️ **l'assegnazione dei dischi è stata invertita il 2026-08-27, vedi [D-033](#d-033):**
+FraOS sul **SanDisk 480 GB**, Windows sul **Crucial 120 GB**. HDD 1 TB condiviso e mai toccato.
+Ogni SSD ha la propria ESP → i due sistemi restano indipendenti.
+Resta valido tutto il resto di questa decisione: ordine di installazione e cavo SATA.
 
 **Ordine:** prima FraOS (sblocca subito la migrazione), Windows nei giorni successivi con calma.
 
@@ -663,3 +666,55 @@ modificati: lì il silicio c'era ed era il driver a inibirlo.)
 
 In pratica: per l'**inferenza** fp16 è equivalente; per il **fine-tuning** serve fp16 **con loss
 scaling** (`fp16=True` nei `TrainingArguments`, mai `bf16=True`).
+
+---
+
+## D-033
+### Dischi invertiti: FraOS sul SanDisk 480, Windows sul Crucial 120
+**Stato:** ACCETTATA · **Data:** 2026-08-27 · **Modifica l'assetto di:** [D-019](#d-019)
+
+**Contesto.** A luglio l'assegnazione era: FraOS sul Crucial 120, Windows sul SanDisk 480. Quella
+scelta è **precedente a [D-032](#d-032)**, cioè a quando lo stack AI (vLLM + Unsloth + modelli) è
+entrato nel piano. Rifatti i conti con i dati reali della macchina, 120 GB non bastano.
+
+**Misure sul sistema attuale (2026-08-27):** lo stack dev/AI su Windows occupa **68 GB già oggi**
+— `AppData\Local\uv` 27,5 · `Docker` 30,8 · `pip` 4,9 · `.unsloth` 4,9. Su FraOS ci si
+aggiungerebbero i container vLLM/CUDA e i modelli HuggingFace.
+
+| | FraOS | Windows |
+|---|---|---|
+| sistema | 15-18 GB (+5-8 per il deployment di rollback) | 25-30 GB, **40-60 dopo un anno di update** (WinSxS non torna indietro) |
+| tag alternativi `bluefin`+`rakuos` ([D-009](#d-009)) | +25-35 GB | — |
+| app | Flatpak 8-12 GB | programmi 20-40 GB |
+| **stack AI** | **container 20 GB + venv 8-10 + modelli 30-50** | (spostato su Linux) |
+| file di sistema | — | pagefile 16-24 GB + hiberfil ~6,5 |
+| **totale realistico** | **125-180 GB** | **90-130 GB** |
+
+**Chi cresce di più è FraOS** — e non per il sistema, che sono ~20 GB, ma per quello che ci
+gira sopra.
+
+**Assetto deciso:**
+
+| Disco | Contenuto |
+|---|---|
+| **SanDisk SSD 480** | **FraOS** — margine ~320 GB: i tre tag pinnati, container e modelli senza contare i GB |
+| **Crucial SSD 120** | **Windows** — ~93 GB stimati, margine ~18 GB |
+| **HDD 1 TB** | dati condivisi + **libreria Steam** + VM |
+
+**Windows in 120 GB richiede tre accortezze** (una tantum, subito dopo l'installazione):
+```
+powercfg /h off                       → libera ~6,5 GB (niente ibernazione)
+pagefile limitato a 8 GB, o su D:     → libera ~10-16 GB
+libreria Steam e Documenti su D:
+```
+Con queste, Windows si assesta sui 70-90 GB. I giochi finiscono su HDD meccanico e caricano più
+lentamente: accettabile, visto che il gaming era già classificato come "minimo, default Windows"
+([D-008](#d-008)).
+
+**Perché non il contrario:** mettere i modelli AI sull'HDD meccanico per far stare FraOS nel 120
+sarebbe la scelta peggiore — il caricamento di un modello da 5 GB passa da ~10 secondi su SSD a
+oltre un minuto su disco rotante, e capita a ogni avvio dell'inferenza.
+
+**Nota di metodo:** questa decisione è nata da una domanda di Fra ("120 GB per Windows non sono
+risicati?") che ha rimesso in discussione un assunto di luglio mai più verificato. L'assunto era
+corretto quando fu preso, ed è diventato sbagliato quando è cambiato lo scopo della macchina.

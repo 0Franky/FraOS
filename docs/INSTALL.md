@@ -2,11 +2,12 @@
 
 > ## 🔌 LE DUE COSE DA NON DIMENTICARE
 >
-> **1. Quando installerai Windows (FASE 4), STACCA PRIMA IL CAVO SATA DEL CRUCIAL 120.**
+> **1. Quando installerai Windows (FASE 4), STACCA PRIMA IL CAVO SATA DEL SANDISK 480 (il disco di FraOS).**
 > L'installer di Windows, se trova una ESP già esistente su un altro disco, può scriverci
 > dentro il proprio bootloader e riordinare il boot: ti ritroveresti FraOS non più avviabile.
-> Con il cavo staccato, Windows crea la sua ESP sul SanDisk e i due sistemi restano
-> completamente indipendenti. Ricollega il cavo a installazione finita. ([D-019](DECISIONS.md#d-019))
+> Con il cavo staccato, Windows crea la sua ESP sul Crucial e i due sistemi restano
+> completamente indipendenti. Ricollega il cavo a installazione finita.
+> ([D-019](DECISIONS.md#d-019), [D-033](DECISIONS.md#d-033))
 >
 > **2. Nel wipe si toccano SOLO i due SSD. L'HDD da 1 TB non si formatta mai:** è il porto
 > sicuro dove sta il backup. Nell'installer seleziona il disco a mano, mai "usa tutto il
@@ -22,9 +23,12 @@
 
 | Disco | Contenuto | Nel wipe |
 |---|---|---|
-| Crucial SSD 120 GB | **FraOS** (+ la sua ESP) | ✅ formattato |
-| SanDisk SSD 480 GB | **Windows** (+ la sua ESP), reinstallato dopo | ✅ formattato |
-| HDD 1 TB | dati, librerie, `_BACKUP-PREWIPE` | ❌ **mai toccato** |
+| **SanDisk SSD 480 GB** | **FraOS** (+ la sua ESP) — è `C:` adesso | ✅ formattato |
+| **Crucial SSD 120 GB** | **Windows** (+ la sua ESP), reinstallato dopo | ✅ formattato |
+| HDD 1 TB (`D:`) | dati, VM, libreria Steam, `_BACKUP-PREWIPE` | ❌ **mai toccato** |
+
+> L'assegnazione è stata **invertita** rispetto al piano di luglio: lo stack AI ([D-032](DECISIONS.md#d-032))
+> ha bisogno di spazio e 120 GB non bastavano. Il perché, con i numeri, in [D-033](DECISIONS.md#d-033).
 
 Boot: **niente rEFInd**. Si sceglie il disco con **F8** all'avvio (ASUS Z370-E), il default si
 imposta da BIOS o con `efibootmgr -o`.
@@ -42,24 +46,41 @@ skopeo inspect docker://ghcr.io/0franky/fraos:latest | head -20
 docker manifest inspect ghcr.io/0franky/fraos:latest
 ```
 
-⚠️ Al primo push il package su GHCR nasce **privato** anche se il repo è pubblico.
-Va reso pubblico a mano: *GitHub → Packages → fraos → Package settings → Change visibility → Public*.
-Senza questo, `bootc switch` sul PC fallirebbe con un errore di autenticazione.
+✅ **Verificato il 2026-08-20:** i tag `latest`, `bazzite` e `20260820` si scaricano senza
+credenziali, e la firma cosign è valida. Nessuna configurazione di autenticazione necessaria.
 
 ---
 
 ## FASE 1 — Backup pre-wipe ([D-017](DECISIONS.md#d-017))
 
-Da fare **mentre la CI gira**, non dopo.
+### Cosa è emerso analizzando i dischi (2026-08-27)
 
-- [ ] Disinstallare i giochi (Steam/Ubisoft: ri-scaricabili) per liberare spazio sull'HDD
-- [ ] Consolidare tutto il prezioso in `D:\_BACKUP-PREWIPE` (documenti, progetti, config, saves)
+Da `C:` serve salvare **pochissimo**: i dati veri sono **già su `D:`**.
+
+- `C:\Users\frhae\VirtualBox VMs` è una **junction** che punta a `D:\VirtualBox VMs` →
+  le **39 GB di VM sono già al sicuro**, non c'è niente da spostare
+- dei 407 GB occupati su `C:`, **222 sono `AppData`**, e quasi tutto è **cache rigenerabile**:
+  SDK Android (37,6), VHDX di Docker (30,8), cache `uv` (27,5) e `pip` (4,9), pacchetti Store (48)
+- fuori da `AppData`, su `C:` ci sono in tutto ~1,6 GB
+
+**E lo spazio non è un problema:** disinstallando la libreria Steam (`D:\SteamLibrary`,
+**298,6 GB**) l'HDD passa da 155 a ~450 GB liberi.
+
+### Checklist
+
+- [ ] **Disinstallare i giochi** da Steam/Ubisoft (ri-scaricabili) → libera ~300 GB su `D:`
+- [ ] Copiare in `D:\_BACKUP-PREWIPE` le **dotfolder di configurazione** da `C:\Users\frhae`:
+      `.ssh` `.aws` `.kube` `.docker` `.gemini` `.claude` `.gitconfig` `.npmrc` — pochi GB in tutto
+- [ ] `C:\Users\frhae\Saved Games` e `source` (~0,6 GB)
 - [ ] **Doppia copia** delle credenziali su Google Drive **e** chiavetta USB:
       chiavi `ssh`, certificati Aruba/CNS, credenziali cloud, config VPN/OpenVPN, `.env` dei progetti
-- [ ] Export delle VM VirtualBox che servono ancora (si convertono dopo con `qemu-img`)
 - [ ] Verifica: GDrive/OneDrive **sincronizzati al 100%**
 - [ ] Verifica: **tutti i repo git pushati** (`git status` pulito ovunque)
 - [ ] Annotare licenze/chiavi software che non stanno in cloud
+- [ ] Esportare i profili browser, se non sono già sincronizzati su account
+
+**NON serve copiare:** `AppData` (cache), SDK Android, immagini Docker, le VM (già su `D:`),
+i programmi installati.
 
 > Il punto di non ritorno è qui. Una volta partito il wipe dei due SSD, l'unica copia dei dati
 > è sull'HDD 1 TB + cloud + USB.
@@ -72,7 +93,7 @@ Da fare **mentre la CI gira**, non dopo.
 2. Scriverla su chiavetta con Fedora Media Writer, Rufus o `dd`
 3. **BIOS:** UEFI attivo, CSM off, Secure Boot **ON** ([D-015](DECISIONS.md#d-015))
 4. Boot da chiavetta → installer Anaconda
-5. **Selezionare come destinazione SOLO il Crucial 120 GB.** Custom/Advanced, mai "usa tutto il disco"
+5. **Selezionare come destinazione SOLO il SanDisk 480 GB.** Custom/Advanced, mai "usa tutto il disco"
 6. Primo boot: enrollment MOK per il driver NVIDIA firmato → password **`universalblue`**
 7. Verificare che il desktop parta e che la rete funzioni
 
@@ -111,10 +132,25 @@ sudo systemctl stop greetd && sudo systemctl start gdm    # sessione GNOME di fa
 
 ## FASE 4 — Post-install
 
-### Windows sul secondo disco
-⚠️ **Scollegare fisicamente il cavo SATA del Crucial 120** prima di installare Windows
-([D-019](DECISIONS.md#d-019)). Ricollegarlo a installazione finita. Poi impostare il disco di default
-da BIOS, e usare **F8** per scegliere l'altro all'occorrenza.
+### Windows sul Crucial 120
+
+⚠️ **Scollegare fisicamente il cavo SATA del SanDisk 480** (quello con FraOS) prima di installare
+Windows ([D-019](DECISIONS.md#d-019)). Ricollegarlo a installazione finita. Poi impostare il disco di
+default da BIOS, e usare **F8** per scegliere l'altro all'occorrenza.
+
+**Subito dopo l'installazione, le tre accortezze che fanno stare Windows in 120 GB**
+([D-033](DECISIONS.md#d-033)) — da prompt amministratore:
+
+```powershell
+powercfg /h off        # niente ibernazione: libera ~6,5 GB
+```
+Poi, da GUI:
+- **pagefile**: Sistema → Impostazioni di sistema avanzate → Prestazioni → Avanzate → Memoria
+  virtuale → dimensione personalizzata **8 GB**, oppure spostalo su `D:`
+- **Steam**: al primo avvio, crea la libreria su `D:\SteamLibrary` (esiste già, ~300 GB)
+- **Documenti/Download/Immagini**: tasto destro → Proprietà → Percorso → sposta su `D:`
+
+Senza queste, Windows arriva a saturare i 120 GB nel giro di qualche mese.
 
 ### Migrazione VM VirtualBox → KVM ([D-011](DECISIONS.md#d-011))
 ```bash
