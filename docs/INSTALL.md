@@ -75,15 +75,16 @@ il controllo va comunque rifatto il giorno della FASE 5.
 - [ ] Chiavetta **B**, solo per la seconda copia cifrata (non si riscrive mai; exFAT, non FAT32:
       con FAT32 un file non può superare 4 GB)
 - [ ] Accesso fisico ai cavi SATA (case aperto), e l'etichetta su ogni cavo: `SANDISK` · `CRUCIAL` · `HDD`
+- [ ] Un cavo SATA di ricambio: il SanDisk ha **7 errori CRC** (SMART 199), cioè errori di trasmissione sul cavo o sul connettore, non del disco. Quando si ricollega, il suo cavo va rimesso bene o sostituito
 - [ ] Telefono con le app di autenticazione a due fattori a portata di mano
 - [ ] 7-Zip (c'è già) per l'archivio cifrato della 3.7
 
 ### 0.3 Verifiche da fare su Windows finché c'è
 
-- [ ] **Salute dell'HDD**: CrystalDiskInfo (o `smartctl -a` da Linux). Deve essere *Buono*.
+- [x] **Salute dell'HDD** — ✅ 2026-10-21: settori riallocati, in attesa e non correggibili tutti a 0, 22.036 ore. Il controllo si fa con CrystalDiskInfo o `smartctl -a` da Linux. Deve essere *Buono*.
       Durante la migrazione l'HDD è l'**unica** copia di quasi tutto: se è *Attenzione*, ci vuole
       un disco esterno **prima** di andare avanti
-- [ ] **Spegnere l'avvio rapido sul Windows VECCHIO** (prompt amministratore):
+- [x] **Spegnere l'avvio rapido sul Windows VECCHIO** — ✅ 2026-10-21, `powercfg /a`: "Ibernazione non disponibile". Prompt amministratore:
       `powercfg /h off`, poi `powercfg /a` non deve più elencare "Avvio rapido".
       Nella FASE 4 due Windows si alternano sullo stesso HDD: con l'avvio rapido acceso, uno dei
       due può riprendere da uno stato NTFS vecchio e **corrompere l'HDD**, che in quel momento è
