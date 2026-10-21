@@ -225,6 +225,22 @@ Log in `D:\_BACKUP-PREWIPE\fase2.log`. I passi, per capire cosa fa:
 
 L'ordine conta: i container Docker vanno fermati **prima** di spegnere WSL.
 
+**Le parti 3.1, 3.2, 3.3 e 3.5 le fa uno script**, che si ferma al primo problema. Ogni copia
+viene riverificata rilanciando robocopy in prova con le stesse esclusioni: se resta anche un solo
+file da copiare, lo script si ferma. Provato il 2026-10-21 su una home finta: esclusioni
+rispettate, file bloccato → stop, file mancante rilevato.
+Da una PowerShell **come amministratore**, con browser, Telegram, VS Code e Discord **chiusi**
+(tengono file aperti in `AppData\Roaming`). Claude Code può restare aperto:
+```powershell
+cd D:\Users\frhae\gitProjects\_current\FraOS
+powershell -ExecutionPolicy Bypass -File tools\fase3-backup-windows.ps1
+# un passo solo, ad esempio per rilanciare dopo un errore:
+powershell -ExecutionPolicy Bypass -File tools\fase3-backup-windows.ps1 -Passi home
+```
+⚠️ Il passo `docker` **ferma tutti i container** (gli ambienti di sviluppo di NetView e
+WillHouse), e il passo `wsl` spegne WSL. Si lancia quando non si sta lavorando su quei progetti.
+Restano a mano la 3.4, la 3.6, la 3.7 e la 3.8. I comandi qui sotto spiegano cosa fa lo script.
+
 ### 3.1 Docker: prima i dump, poi i volumi a container fermi
 I container girano (Docker Desktop parte da solo, con restart policy): un `tar` della cartella
 di Postgres mentre il server scrive può dare un archivio che non riparte.
@@ -232,8 +248,8 @@ di Postgres mentre il server scrive può dare un archivio che non riparte.
 New-Item -ItemType Directory -Force "$B\C\docker" | Out-Null
 docker ps -a --format '{{.Names}}  {{.Image}}  {{.Mounts}}' | Out-File -Encoding utf8 "$B\C\docker\container.txt"
 docker inspect $(docker ps -aq) | Out-File -Encoding utf8 "$B\C\docker\inspect.json"   # quale volume va a quale container
-# dump logici: reggono anche un cambio di versione di Postgres. L'utente va controllato per container
-cmd /c "docker exec netview-db pg_dumpall -U postgres > $B\C\docker\netview-db.sql"
+# dump logici: reggono anche un cambio di versione di Postgres (netview-db è la 17.6, willhouse-postgres la 18.4)
+cmd /c "docker exec netview-db pg_dumpall -U supabase_admin > $B\C\docker\netview-db.sql"   # POSTGRES_USER, letto il 2026-10-21
 cmd /c "docker exec willhouse-postgres pg_dumpall -U postgres > $B\C\docker\willhouse-db.sql"
 docker stop $(docker ps -q)
 docker volume ls -q | ForEach-Object {
