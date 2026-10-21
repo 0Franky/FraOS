@@ -103,7 +103,8 @@ il controllo va comunque rifatto il giorno della FASE 5.
 - [x] **Certificato EFS `CN=frhae`** — ✅ esportato il 2026-10-21 in `D:\_BACKUP-PREWIPE\C\efs\` (`.pfx` + password generata in `efs-frhae.password.txt`, riaperto e verificato). EFS **non è BitLocker**: cifra singoli file. Il certificato serve solo se ci sono file cifrati, e la ricerca con `cipher` lo dice. Procedura manuale, per riferimento: `certmgr.msc` → Personale →
       `frhae` → Esporta → *sì, esporta la chiave privata* → `.pfx` con password. Senza, ogni file
       cifrato con EFS (su `C:` **o su `D:`**) diventa illeggibile per sempre. Controllare se ce ne
-      sono con `cipher /u /n /h` (sola lettura); se sì, decifrarli prima con `cipher /d /s:<cartella>`
+      sono con `cipher /u /n /h` (sola lettura); se sì, decifrarli prima con `cipher /d /s:<cartella>`.
+      ✅ 2026-10-21: scansione completa di `C:`, `D:`, `E:` → **nessun file cifrato**
 - [ ] **Gestione credenziali di Windows**: i segreti lì dentro sono cifrati con la chiave
       dell'utente (DPAPI) e spariscono col wipe. Quasi tutti si rifanno con un login; annotare nel
       password manager quelli che non si rigenerano facilmente (token del registry GitLab usato da
