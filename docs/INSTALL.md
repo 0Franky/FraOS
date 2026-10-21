@@ -100,7 +100,7 @@ il controllo va comunque rifatto il giorno della FASE 5.
 - [ ] Annotare i product key che non stanno in un account (Office 2021 LTSC, ecc.)
 - [ ] **Disattivare** le licenze legate alla macchina **prima** del wipe (Adobe: esci
       dall'account; software con licenza a nodo: deattivazione dal programma)
-- [ ] **Certificato EFS `CN=frhae`** (c'è, con chiave privata): `certmgr.msc` → Personale →
+- [x] **Certificato EFS `CN=frhae`** — ✅ esportato il 2026-10-21 in `D:\_BACKUP-PREWIPE\C\efs\` (`.pfx` + password generata in `efs-frhae.password.txt`, riaperto e verificato). EFS **non è BitLocker**: cifra singoli file. Il certificato serve solo se ci sono file cifrati, e la ricerca con `cipher` lo dice. Procedura manuale, per riferimento: `certmgr.msc` → Personale →
       `frhae` → Esporta → *sì, esporta la chiave privata* → `.pfx` con password. Senza, ogni file
       cifrato con EFS (su `C:` **o su `D:`**) diventa illeggibile per sempre. Controllare se ce ne
       sono con `cipher /u /n /h` (sola lettura); se sì, decifrarli prima con `cipher /d /s:<cartella>`
@@ -293,7 +293,7 @@ L'elenco completo dei programmi e delle 61 estensioni VS Code è già in `wiki/`
 ```powershell
 & 'C:\Program Files\7-Zip\7z.exe' a -p -mhe=on "$B\segreti-prewipe.7z" <elenco qui sotto>
 ```
-`.ssh` · `.gnupg` · `.aws` · `.azure` · `.kube` · i loro gemelli dentro WSL · il `.pfx` EFS ·
+`.ssh` · `.gnupg` · `.aws` · `.azure` · `.kube` · i loro gemelli dentro WSL · `C\efs\` (il `.pfx` EFS **e** il file con la sua password) ·
 certificati Aruba/CNS · config VPN e profili Wi-Fi · i **`.env` dei progetti** (non stanno su
 git) · i CSV delle password · `backups-prod`, `willhouse-backups`, `wh-handoff` · `~/.claude` ·
 la cartella `wiki/` di FraOS.
