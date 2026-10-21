@@ -30,6 +30,12 @@ param(
 $ErrorActionPreference = 'Stop'
 $C = Join-Path $Backup 'C'
 New-Item -ItemType Directory -Force $C | Out-Null
+# Qui finiscono dump SQL, chiavi Wi-Fi in chiaro e volumi di Vault: la cartella NON deve ereditare
+# "Authenticated Users: Modify" dalla radice di D:, che darebbe accesso anche agli utenti locali
+# della sandbox di Codex. Solo l'utente, SYSTEM e gli amministratori (il Windows nuovo ci arriva
+# da amministratore; Linux con ntfs3 ignora queste ACL).
+icacls $Backup /inheritance:r /grant:r "$($env:USERNAME):(OI)(CI)F" '*S-1-5-18:(OI)(CI)F' '*S-1-5-32-544:(OI)(CI)F' /C /Q | Out-Null   # SENZA /T: sui file toglierebbe i permessi ereditati senza concederne altri (provato)
+if ($LASTEXITCODE -ne 0) { throw "icacls su $Backup fallito (codice $LASTEXITCODE)" }
 Start-Transcript -Path (Join-Path $Backup 'fase3.log') -Append | Out-Null
 
 function Copia($da, $a, [string[]]$extra) {
