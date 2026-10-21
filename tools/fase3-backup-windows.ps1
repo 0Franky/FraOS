@@ -45,8 +45,9 @@ function Copia($da, $a, [string[]]$extra) {
   New-Item -ItemType Directory -Force $a | Out-Null        # robocopy NON crea la cartella del log
   robocopy $da $a /E /COPY:DAT /DCOPY:DAT /XJ /R:1 /W:1 /MT:8 @extra /NP /LOG:"$a.log" | Out-Null
   if ($LASTEXITCODE -ge 8) { throw "robocopy $da -> codice $LASTEXITCODE, leggi $a.log (file in uso? chiudi l'app e rilancia)" }
-  # verifica: stessa copia in prova. Ogni riga e' un file che manca ancora nella copia
-  $manca = @(robocopy $da $a /E /XJ /L /R:0 /W:0 @extra /NJH /NJS /NDL /NC /NS /FP | Where-Object { $_.Trim() })
+  # verifica: stessa copia in prova. Ogni riga e' un file che manca ancora nella copia.
+  # /XX: i file IN PIU' nella copia (cancellati dalla sorgente dopo la copia, es. lock) non contano
+  $manca = @(robocopy $da $a /E /XJ /XX /L /R:0 /W:0 @extra /NJH /NJS /NDL /NC /NS /FP | Where-Object { $_.Trim() })
   if ($manca.Count -gt 0) { throw "copia di $da INCOMPLETA, mancano $($manca.Count) file (es. $($manca[0].Trim()))" }
   "OK  $da -> $a"
 }
@@ -87,8 +88,9 @@ if ($Passi -contains 'home') {
   Copia $Home_ "$C\home" @('/XD', 'AppData', '.gradle', '.cache', '.rustup', '.cargo', '.bun', 'scoop',
     'npm-cache', 'unsloth_compiled_cache', 'avd', '.venv_t5_510', '.venv_t5_530', '.venv_t5_550',
     'OneDrive', 'node_modules', '/XF', 'NTUSER.DAT*', 'ntuser.dat*', 'UsrClass.dat*')
+  # Recent = cronologia e jump list di Windows: riscritti di continuo, inutili sul sistema nuovo
   Copia "$Home_\AppData\Roaming" "$C\AppData-Roaming" @('/XD', 'Cache', 'Code Cache', 'GPUCache',
-    'CachedData', 'CachedExtensionVSIXs', 'Service Worker', 'logs')
+    'CachedData', 'CachedExtensionVSIXs', 'Service Worker', 'logs', 'Recent', '/XF', '*.log', 'log.txt', 'lock', 'lock_client')   # lock/lock_client: Parsec, tenuti aperti dal suo servizio
   foreach ($x in 'C:\RustDeskServer', 'C:\tmp') { if (Test-Path $x) { Copia $x "$C\root-$(Split-Path $x -Leaf)" } }
   Copy-Item C:\Windows\System32\drivers\etc\hosts "$C\hosts"
   if ($admin) {

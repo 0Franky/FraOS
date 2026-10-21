@@ -13,7 +13,7 @@
 |---|---|
 | **Ultimo aggiornamento** | 2026-10-21 |
 | **Fase corrente** | **F3 — Backup pre-wipe**: runbook FASI 0-2 fatte, si passa alla FASE 3 |
-| **Prossima azione** | **FASE 3**: `tools/fase3-backup-windows.ps1` (da amministratore, app chiuse; ferma i container), poi a mano 3.4, 3.6, 3.7 e 3.8. FASI 0, 1 e 2 **chiuse** il 2026-10-21: il Crucial è svuotato (`~/.claude` 78.380 file / 2,00 GB e modelli Ollama 43 file / 16,55 GB copiati in `D:\_BACKUP-PREWIPE\E`, conteggi identici, link e `OLLAMA_MODELS` puntati sulla copia) |
+| **Prossima azione** | **FASE 3, parti a mano**: 3.4 password dei browser in CSV (3 profili Chrome + Edge) · 3.6 push dei repo · 3.7 archivio cifrato dei segreti · 3.8 verifica. Parti automatiche **fatte il 2026-10-21**: Docker (2 dump, 18 volumi), WSL 17,7 GB, home 23,8 GB, Roaming 14,5 GB, RustDesk, hosts, 7 profili Wi-Fi, winget. Backup totale ~93 GB, HDD 149 GB liberi, cartella accessibile solo a utente/SYSTEM/amministratori |
 | **Bloccante attivo** | Nessuno. La CI è tornata verde il 2026-10-21 ([D-034](DECISIONS.md#d-034)), dopo 23 giorni di build rosse |
 | **Obiettivo finale** | Formattare il PC e usare FraOS come OS primario (dual boot con Windows) |
 
