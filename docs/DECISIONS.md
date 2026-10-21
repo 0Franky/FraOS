@@ -48,6 +48,7 @@
 | [D-033](#d-033) | **Dischi invertiti**: FraOS sul 480, Windows sul 120 | ACCETTATA | 2026-08-27 |
 | [D-034](#d-034) | `ddcutil` solo se la base non lo porta già (conflitto con `terra-ddcutil`) | ACCETTATA | 2026-10-21 |
 | [D-035](#d-035) | Ordine: **Windows nuovo prima, FraOS dopo**, un disco collegato per volta | ACCETTATA | 2026-10-21 |
+| [D-036](#d-036) | Ollama resta, **in prova**: un confronto vLLM / Ollama / Unsloth Studio decide chi serve i modelli | ACCETTATA | 2026-10-21 |
 
 ---
 
@@ -787,3 +788,24 @@ dimenticato su `C:`.
 
 Il "staccare i cavi" diventa la regola per **entrambe** le installazioni, non un'eccezione
 da ricordare per una sola: con un solo disco collegato, l'installer non può sbagliare disco.
+
+---
+
+## D-036
+### Ollama resta, in prova: un confronto decide chi serve i modelli
+**Stato:** ACCETTATA · **Data:** 2026-10-21 · **Integra:** [D-032](#d-032)
+
+**Contesto.** [D-032](#d-032) aveva scelto vLLM al posto di Ollama. Nella ricognizione del
+2026-10-21 è emerso che Fra Ollama lo usa davvero: modelli personalizzati a luglio e tre modelli di
+embedding. Fra: *"ollama resta ma non so quanto lo userò. penso che userò vllm e unsloth studio per
+la maggiore. valutiamo chi riesce a servire in modo migliore e teniamo quello."*
+
+**Decisione:**
+- Ollama resta su FraOS, **in container** come vLLM. I suoi modelli sono stati sfoltiti (da 32,8 a
+  16,5 GB: tenuti 7 nomi, rimossi `jaahas/qwen3.5-uncensored:9b` e Rocinante 12B)
+- Dopo l'installazione, un **confronto alla pari** fra vLLM, Ollama e Unsloth Studio decide chi
+  serve i modelli: stesso modello, stesso contesto, un server per volta. Si tiene **uno solo**.
+  Procedura e misure in [`AI-STACK.md`](AI-STACK.md)
+- Unsloth Studio resta comunque per il **fine-tuning**: il confronto riguarda solo il servire
+- `fraos-ai-update` ora aggiorna anche l'immagine di Ollama, se è stata scaricata: il filtro prima
+  la escludeva, e un Ollama in container sarebbe rimasto indietro senza avvisare

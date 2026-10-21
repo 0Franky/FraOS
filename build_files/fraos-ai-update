@@ -45,7 +45,7 @@ did_something=0
 if command -v podman >/dev/null 2>&1; then
   mapfile -t imgs < <(podman images --format '{{.Repository}}:{{.Tag}}' 2>/dev/null \
     | grep -viE '<none>' \
-    | grep -iE 'vllm|unsloth|nvidia/cuda|text-generation-inference|huggingface' \
+    | grep -iE 'vllm|ollama|unsloth|nvidia/cuda|text-generation-inference|huggingface' \
     | sort -u)
 
   if [ "${#imgs[@]}" -gt 0 ]; then

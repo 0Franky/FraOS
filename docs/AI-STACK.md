@@ -107,6 +107,46 @@ Per fermarlo: `podman stop vllm`. Per farlo ripartire al boot:
 
 ---
 
+## Chi serve meglio: il confronto da fare su FraOS ([D-036](DECISIONS.md#d-036))
+
+Tre candidati per **servire** i modelli. Dopo il confronto se ne tiene **uno**:
+
+| Candidato | Formato dei pesi | Dove gira |
+|---|---|---|
+| **vLLM** | HuggingFace: AWQ / GPTQ 4-bit | container `vllm/vllm-openai` |
+| **Ollama** | GGUF (llama.cpp) | container `ollama/ollama` |
+| **Unsloth Studio** | GGUF, con un suo llama.cpp (`~/.unsloth/llama.cpp`) | venv nella home |
+
+**Regole perché il confronto valga qualcosa:**
+- **stesso modello** in tutti e tre, alla quantizzazione più vicina possibile: es. Qwen 3.5 9B
+  in AWQ 4-bit per vLLM e in GGUF Q4_K_M per gli altri due (è il blob che abbiamo già)
+- **stesso contesto** (`--max-model-len` / `num_ctx`), stesso prompt, stessa lunghezza di risposta
+- **un solo server acceso per volta**: con 11 GB di VRAM due insieme falsano tutto
+- desktop acceso come nell'uso vero (Niri e il browser usano un po' di VRAM)
+
+**Cosa misurare** (tutti e tre espongono un'API compatibile OpenAI, quindi lo stesso client va
+bene per tutti):
+
+| Misura | Perché conta qui |
+|---|---|
+| token/s con **una** richiesta | è l'uso tipico: una persona, un client |
+| token/s con **4-8 richieste insieme** | agenti e script in parallelo: è il punto forte di vLLM |
+| tempo al primo token | la reattività che si percepisce |
+| **contesto massimo** che entra in 11 GB | su questa GPU spesso conta più della velocità |
+| VRAM occupata a riposo | quanto resta al desktop e al resto |
+| tempo di avvio e di cambio modello | Ollama carica e scarica da solo, vLLM no |
+
+**Ipotesi da verificare, non un risultato:** su Turing (niente FlashAttention 2) e con una
+richiesta per volta, llama.cpp in GGUF è spesso pari o più veloce di vLLM in AWQ; vLLM tende a
+vincere appena le richieste sono più d'una. Se l'uso vero è "uno alla volta", Ollama o Studio
+potrebbero bastare; se ci sono agenti in parallelo, vLLM. Lo diranno i numeri.
+
+**Fine-tuning a parte:** Unsloth Studio resta per l'addestramento comunque. Il confronto riguarda
+solo chi **serve** i modelli. Quello che perde si disinstalla, e `fraos-ai-update` smette di
+aggiornarlo da solo, perché aggiorna solo ciò che trova installato.
+
+---
+
 ## Unsloth — fine-tuning
 
 Unsloth si usa in tre modi: **Desktop** (app), **Studio** (web UI, Beta), **Core** (libreria).

@@ -122,9 +122,9 @@ Oggi l'HDD ha **40 GB liberi**. Il backup ne chiede (misurato a secco con `roboc
 | export di WSL `Ubuntu` | ~19 | **obbligatorio** (29 commit non pushati in `~/wh`, e credenziali proprie) |
 | dump dei DB + volumi Docker | ~3 | **obbligatorio** se servono i DB di sviluppo |
 | `C:\RustDeskServer`, `C:\tmp`, `hosts`, profili Wi-Fi | <1 | **obbligatorio** (la chiave del server RustDesk non si rigenera senza riconfigurare i client) |
-| `E:\ollama_models` | 33 | facoltativo: riscaricabile, **ma** ci sono modelli personalizzati (`*-ctx16k`, `*-ctx8k`) |
+| `E:\ollama_models` | 16,5 | i 7 modelli scelti (2 scartati e rimossi da Ollama il 2026-10-21, vedi `wiki/ollama-modelli.md`) |
 | margine | 20 | per non lavorare a disco pieno |
-| **totale** | **~115** | |
+| **totale** | **~100** | (HDD: **225,5 GB liberi** dopo aver tolto Call of Duty) |
 
 **Come liberarli** (decisione di Fra, vedi [`STATUS.md`](STATUS.md) → domande aperte):
 

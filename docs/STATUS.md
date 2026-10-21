@@ -13,7 +13,7 @@
 |---|---|
 | **Ultimo aggiornamento** | 2026-10-21 |
 | **Fase corrente** | **F3 — Backup pre-wipe**, non ancora iniziato |
-| **Prossima azione** | 1) scegliere quali modelli Ollama salvare (`wiki/ollama-modelli.md`) · 2) [`INSTALL.md`](INSTALL.md) FASE 0: SMART dell'HDD, avvio rapido, certificato EFS |
+| **Prossima azione** | [`INSTALL.md`](INSTALL.md) FASE 0: SMART dell'HDD, avvio rapido sul Windows vecchio, certificato EFS (la FASE 1 è già fatta) |
 | **Bloccante attivo** | Nessuno. La CI è tornata verde il 2026-10-21 ([D-034](DECISIONS.md#d-034)), dopo 23 giorni di build rosse |
 | **Obiettivo finale** | Formattare il PC e usare FraOS come OS primario (dual boot con Windows) |
 
@@ -99,8 +99,8 @@ vede i nomi, non i conflitti.
 | # | Domanda | Risposta di Fra |
 |---|---|---|
 | 1 | Ordine di installazione | ✅ **Windows prima, FraOS dopo**, un disco per volta → [D-035](DECISIONS.md#d-035) ACCETTATA |
-| 2 | Spazio sull'HDD | ✅ **disinstallare solo Call of Duty** (178 GB) |
-| 3 | I 33 GB di modelli Ollama | 🟡 **valutare modello per modello** quali salvare e quali riscaricare (alcuni potrebbero essere obsoleti) |
+| 2 | Spazio sull'HDD | ✅ **solo Call of Duty**: cancellato il 2026-10-21, ora l'HDD ha **225,5 GB liberi** (FASE 1 fatta) |
+| 3 | I 33 GB di modelli Ollama | ✅ **Ollama resta, in prova** ([D-036](DECISIONS.md#d-036)): dopo l'installazione un confronto vLLM / Ollama / Unsloth Studio decide chi serve i modelli, e si tiene quello. Tenuti 7 modelli (16,5 GB), rimossi `jaahas/qwen3.5-uncensored:9b` e Rocinante 12B → `wiki/ollama-modelli.md` |
 | 4 | Commit e push del fix della build | ✅ sì |
 | 5 | Programmi in più (Flatpak/brew) | ⬜ aperta, non bloccante: proposta in `wiki/README.md` |
 
