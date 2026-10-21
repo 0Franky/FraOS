@@ -63,7 +63,7 @@ foreach ($l in @(@{n='.claude'; dir=$true}, @{n='.claude.json'; dir=$false})) {
   if ($item) { if ($l.dir) { cmd /c rmdir "$p" } else { cmd /c del "$p" } }
   $t = "$dest\claude\$($l.n)"
   if ($l.dir) { cmd /c mklink /D "$p" "$t" | Out-Null } else { cmd /c mklink "$p" "$t" | Out-Null }
-  "{0} -> {1}" -f $p, (Get-Item $p -Force).Target
+  "{0} -> {1}" -f $p, ((Get-Item $p -Force).Target -join '')
 }
 
 # --- 3. Ollama punta alla copia (variabile di SISTEMA, come quella vecchia) ---------
