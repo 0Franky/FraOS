@@ -176,6 +176,17 @@ $B = 'D:\_BACKUP-PREWIPE'
 
 Il Crucial è il primo disco che si formatta. Va svuotato per intero.
 
+**Si fa con uno script** che esegue i passi qui sotto e si ferma al primo problema
+(processi aperti, spazio, errore di robocopy, conteggi che non tornano, `settings.json` assente).
+È stato provato il 2026-10-21 su una copia finta di `E:` con symlink, junction e un file bloccato.
+Con **Claude Code (anche le sessioni Telegram) e Ollama chiusi**, da una PowerShell **come
+amministratore**:
+```powershell
+cd D:\Users\frhae\gitProjects\_current\FraOS
+powershell -ExecutionPolicy Bypass -File tools\fase2-svuota-crucial.ps1
+```
+Log in `D:\_BACKUP-PREWIPE\fase2.log`. I passi, per capire cosa fa:
+
 1. **Fermare Claude Code, tutto**, comprese le sessioni sempre accese pilotate da Telegram
    (lavorano dentro `E:\claude`). Chiudere anche Ollama dall'icona nella tray:
    ```powershell
