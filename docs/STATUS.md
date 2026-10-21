@@ -13,7 +13,7 @@
 |---|---|
 | **Ultimo aggiornamento** | 2026-10-21 |
 | **Fase corrente** | **F3 — Backup pre-wipe**, non ancora iniziato |
-| **Prossima azione** | FASE 2: `tools/fase2-svuota-crucial.ps1` (da amministratore, con Claude Code e Ollama chiusi). In corso: ricerca dei file EFS e prova di Unsloth sulla 2080 Ti. Già fatti: SMART, avvio rapido, certificato EFS, FASE 1 |
+| **Prossima azione** | FASE 2: `tools/fase2-svuota-crucial.ps1` (da amministratore, con Claude Code e Ollama chiusi). In corso: ricerca dei file EFS. Unsloth sulla 2080 Ti: ✅ funziona. Già fatti: SMART, avvio rapido, certificato EFS, FASE 1 |
 | **Bloccante attivo** | Nessuno. La CI è tornata verde il 2026-10-21 ([D-034](DECISIONS.md#d-034)), dopo 23 giorni di build rosse |
 | **Obiettivo finale** | Formattare il PC e usare FraOS come OS primario (dual boot con Windows) |
 
@@ -125,5 +125,5 @@ vede i nomi, non i conflitti.
 | `Mod+D` (launcher DMS) con IPC sbagliato | Correggere `dot_config/niri/config.kdl` e ri-pushare |
 | Niri non parte al primo boot | GNOME resta installato: da TTY `sudo systemctl stop greetd && sudo systemctl start gdm` ([D-018](DECISIONS.md#d-018)) |
 | Windows sovrascrive il boot di Linux | Installare Windows **con il cavo SATA del disco Linux staccato** ([D-019](DECISIONS.md#d-019)) |
-| **Unsloth Studio non supporta la RTX 2080 Ti** | Il suo README elenca RTX 30/40/50, non la serie 20. Ripieghi: Unsloth Core da script, oppure PEFT + bitsandbytes ([`AI-STACK.md`](AI-STACK.md), [D-032](DECISIONS.md#d-032)) |
+| ~~Unsloth Studio non supporta la RTX 2080 Ti~~ | ✅ **Chiuso il 2026-10-21**: un fine-tuning QLoRA fp16 di prova va a buon fine sulla 2080 Ti (loss da 3,82 a 0,67). Resta da sapere: **mai** fidarsi di `torch.cuda.is_bf16_supported()`, che su Turing dice `True` ([`AI-STACK.md`](AI-STACK.md)) |
 | vLLM: modelli 7B in fp16 non entrano negli 11 GB | Usare quantizzazione **AWQ/GPTQ 4-bit** e `--dtype half` (bfloat16 non esiste su Turing) |

@@ -157,6 +157,19 @@ curl -fsSL https://unsloth.ai/install.sh | sh
 unsloth studio        # la web UI, di default su 127.0.0.1
 ```
 
+> ✅ **Verificato il 2026-10-21 sulla macchina vera** (Windows, venv di Unsloth Studio: Unsloth
+> 2026.8.21, PyTorch 2.10 + CUDA 13): un fine-tuning QLoRA 4-bit di `unsloth/Qwen3-0.6B`,
+> 15 passi in fp16, **va a buon fine**. La loss scende da 3,82 a 0,67, picco di VRAM 0,68 GB,
+> 4,4 s/passo (compilazione del primo passo inclusa). Unsloth riconosce la scheda da solo:
+> *"Bfloat16 = FALSE. FA [Xformers = 0.0.34. FA2 = False]"*. È lo stesso backend che usa lo Studio.
+>
+> ⚠️ **Trappola trovata nella stessa prova:** `torch.cuda.is_bf16_supported()` sulla 2080 Ti
+> restituisce **`True`**, perché conta anche l'emulazione software. Uno script che sceglie il dtype
+> con quel test finisce in bf16 emulato, lento. Su questa GPU il dtype va **forzato**:
+> `dtype=torch.float16`, `fp16=True, bf16=False`.
+>
+> Il testo che segue è la valutazione di prima della prova, conservata per contesto.
+
 > ⚠️ **Da verificare sulla macchina vera, prima di farci affidamento.**
 > Il README di Unsloth dichiara, per Unsloth Studio: *"Training works on RTX 30/40/50,
 > Blackwell, DGX Spark, Station and more"*. **La serie RTX 20 non è elencata.**

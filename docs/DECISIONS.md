@@ -621,6 +621,8 @@ Corollario: **non usare `rpm-ostree install` per pacchetti Python.**
 - **11 GB di VRAM** è il tetto vero: un 7B in fp16 (~14 GB) non entra, servono modelli **AWQ/GPTQ
   a 4 bit** (~5-6 GB)
 
+✅ **Rischio chiuso il 2026-10-21**: un fine-tuning di prova va a buon fine sulla 2080 Ti, dettagli in [`AI-STACK.md`](AI-STACK.md). Valutazione originale:
+
 ⚠️ **Rischio aperto su Unsloth Studio:** il suo README dichiara *"Training works on RTX 30/40/50,
 Blackwell, DGX Spark, Station and more"* — **la serie RTX 20 non è elencata**. Unsloth Core ha
 storicamente supportato la capability 7.0+, ma il supporto dello **Studio** su Turing non è
