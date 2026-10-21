@@ -23,11 +23,14 @@ cartella e' gia' su D: e qui non viene toccata.
 #>
 param(
   [string]$Backup = 'D:\_BACKUP-PREWIPE',
-  [ValidateSet('docker', 'wsl', 'home', 'inventari')]
   [string[]]$Passi = @('docker', 'wsl', 'home', 'inventari'),
   [string]$Home_ = $env:USERPROFILE          # parametri usati solo dalle prove
 )
 $ErrorActionPreference = 'Stop'
+# con `powershell -File` l'elenco arriva come UNA stringa ("home,inventari"): la spezziamo noi
+$Passi = @($Passi -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+$ignoti = @($Passi | Where-Object { $_ -notin 'docker', 'wsl', 'home', 'inventari' })
+if ($ignoti) { throw "passi sconosciuti: $($ignoti -join ', ') (validi: docker, wsl, home, inventari)" }
 $C = Join-Path $Backup 'C'
 New-Item -ItemType Directory -Force $C | Out-Null
 # Qui finiscono dump SQL, chiavi Wi-Fi in chiaro e volumi di Vault: la cartella NON deve ereditare
