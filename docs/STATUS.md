@@ -13,7 +13,7 @@
 |---|---|
 | **Ultimo aggiornamento** | 2026-10-21 |
 | **Fase corrente** | **F3 — Backup pre-wipe**: runbook FASI 0-2 fatte, si passa alla FASE 3 |
-| **Prossima azione** | **FASE 3**, backup del vecchio Windows. FASI 0, 1 e 2 **chiuse** il 2026-10-21: il Crucial è svuotato (`~/.claude` 78.380 file / 2,00 GB e modelli Ollama 43 file / 16,55 GB copiati in `D:\_BACKUP-PREWIPE\E`, conteggi identici, link e `OLLAMA_MODELS` puntati sulla copia) |
+| **Prossima azione** | **FASE 3**: `tools/fase3-backup-windows.ps1` (da amministratore, app chiuse; ferma i container), poi a mano 3.4, 3.6, 3.7 e 3.8. FASI 0, 1 e 2 **chiuse** il 2026-10-21: il Crucial è svuotato (`~/.claude` 78.380 file / 2,00 GB e modelli Ollama 43 file / 16,55 GB copiati in `D:\_BACKUP-PREWIPE\E`, conteggi identici, link e `OLLAMA_MODELS` puntati sulla copia) |
 | **Bloccante attivo** | Nessuno. La CI è tornata verde il 2026-10-21 ([D-034](DECISIONS.md#d-034)), dopo 23 giorni di build rosse |
 | **Obiettivo finale** | Formattare il PC e usare FraOS come OS primario (dual boot con Windows) |
 
