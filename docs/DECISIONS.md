@@ -46,6 +46,8 @@
 | [D-031](#d-031) | Tag `rakuos` → variante **-v3** (x86-64-v3) | ACCETTATA | 2026-08-20 |
 | [D-032](#d-032) | Stack AI (vLLM + Unsloth) fuori dall'immagine | ACCETTATA | 2026-08-20 |
 | [D-033](#d-033) | **Dischi invertiti**: FraOS sul 480, Windows sul 120 | ACCETTATA | 2026-08-27 |
+| [D-034](#d-034) | `ddcutil` solo se la base non lo porta già (conflitto con `terra-ddcutil`) | ACCETTATA | 2026-10-21 |
+| [D-035](#d-035) | Ordine: **Windows nuovo prima, FraOS dopo**, un disco collegato per volta | ACCETTATA | 2026-10-21 |
 
 ---
 
@@ -252,6 +254,11 @@ Nessun disco esterno disponibile → **l'HDD da 1 TB fa da porto sicuro** e non 
 4. Verifiche pre-wipe: GDrive/OneDrive sincronizzati, **tutti i repo git pushati**
 5. Wipe **solo** dei due SSD (SanDisk 480 = Windows, Crucial 120 = Linux). HDD 1 TB intatto
 
+> **Aggiornata il 2026-10-21** (il principio resta, i dettagli no): l'assegnazione dei dischi del
+> punto 5 è invertita da [D-033](#d-033); il punto 1 diventa "disinstallare solo Call of Duty"
+> (basta e si evita di riscaricare il resto); la seconda copia del punto 3 va **cifrata**. La
+> procedura valida, misurata, è in [`INSTALL.md`](INSTALL.md).
+
 ---
 
 ## D-018
@@ -289,7 +296,9 @@ Resta valido tutto il resto di questa decisione: ordine di installazione e cavo 
 
 ⚠️ **Rischio e mitigazione obbligatoria:** l'installer di Windows, se trova una ESP già esistente
 su un altro disco, può scriverci dentro il proprio bootloader e riordinare il boot.
-→ **Installare Windows con il cavo SATA del Crucial 120 fisicamente scollegato.** Ricollegarlo dopo.
+→ ~~Installare Windows con il cavo SATA del Crucial 120 fisicamente scollegato.~~ **Riga superata
+il 2026-10-21:** dopo [D-033](#d-033) il Crucial **è** il disco di Windows. La regola valida è
+in [D-035](#d-035): durante ogni installazione resta collegato **solo** il disco di destinazione.
 
 ---
 
@@ -718,3 +727,60 @@ oltre un minuto su disco rotante, e capita a ogni avvio dell'inferenza.
 **Nota di metodo:** questa decisione è nata da una domanda di Fra ("120 GB per Windows non sono
 risicati?") che ha rimesso in discussione un assunto di luglio mai più verificato. L'assunto era
 corretto quando fu preso, ed è diventato sbagliato quando è cambiato lo scopo della macchina.
+
+---
+
+## D-034
+### `ddcutil` installato solo se la base non ne porta già uno
+**Stato:** ACCETTATA · **Data:** 2026-10-21
+
+**Contesto.** Dal **2026-09-28** la build giornaliera falliva sempre (23 build rosse di fila,
+scoperte solo il 2026-10-21). L'ultima immagine verde è del **2026-09-27**: `latest` è rimasto
+fermo lì, senza che nessuno se ne accorgesse.
+
+```
+Problem: installed package terra-ddcutil-3.0.2-2.fc44.x86_64 conflicts with ddcutil
+         provided by ddcutil-2.2.1-3.fc44.x86_64 from fedora
+```
+
+Bazzite ha iniziato a includere `terra-ddcutil` (dal repo Terra, versione 3.x), e il nostro
+`dnf install ddcutil` (Fedora, 2.x) va in conflitto. MorrOS non ha il problema perché non
+installa `ddcutil`.
+
+**Decisione:** `command -v ddcutil >/dev/null || dnf -y install ddcutil`. Su Bazzite si usa
+quello della base, che è più recente; sui tag `bluefin`/`rakuos` lo installiamo noi.
+
+**Lezione:** un cron giornaliero che fallisce in silenzio vale quanto nessun cron. Prima di
+installare va controllato `gh run list --workflow build.yml --limit 5`: l'ultima build deve
+essere verde e recente (passo inserito in [`INSTALL.md`](INSTALL.md), FASE 0).
+
+---
+
+## D-035
+### Ordine di installazione: Windows nuovo **prima**, FraOS **dopo**, un disco collegato per volta
+**Stato:** ACCETTATA (confermata da Fra il 2026-10-21) · **Data:** 2026-10-21 · **Modifica l'ordine di:** [D-019](#d-019)
+
+**Contesto.** [D-019](#d-019) prevedeva "prima FraOS, poi Windows". Con l'inversione dei dischi
+([D-033](#d-033)) quell'ordine significa che **il primo passo distrugge il Windows attuale**
+(sta sul SanDisk 480, il disco di FraOS): da quel momento non c'è più modo di recuperare un file
+dimenticato su `C:`.
+
+**Proposta:**
+
+1. Svuotare il Crucial 120 (`E:`) sull'HDD
+2. Installare **Windows nuovo sul Crucial**, con **solo il Crucial collegato**
+3. Ricollegare tutto: il Windows vecchio resta avviabile con F8, e il suo `C:` è leggibile dal
+   Windows nuovo come disco dati → **seconda occasione** per copiare ciò che si era dimenticato
+4. Solo quando il Windows nuovo funziona: installare FraOS sul SanDisk, con **solo il SanDisk
+   collegato**
+
+| | D-019 (FraOS prima) | D-035 (Windows prima) |
+|---|---|---|
+| Un sistema funzionante in ogni momento | ❌ dal wipe fino a fine installazione | ✅ sempre |
+| File dimenticato su `C:` | perso | recuperabile fino al passo 4 |
+| Rischio di formattare il disco sbagliato | selezione manuale nell'installer | **zero**: nell'installer c'è un solo disco |
+| Rischio che Windows scriva sulla ESP di Linux | mitigato staccando un cavo | **assente**: Linux non c'è ancora |
+| Linux disponibile | subito | dopo l'installazione di Windows (un pomeriggio in più) |
+
+Il "staccare i cavi" diventa la regola per **entrambe** le installazioni, non un'eccezione
+da ricordare per una sola: con un solo disco collegato, l'installer non può sbagliare disco.

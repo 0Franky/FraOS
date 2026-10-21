@@ -8,3 +8,6 @@ scratchpad/
 *.log
 bash.exe.stackdump
 *.stackdump
+
+# wiki locale: dati personali (inventario programmi, repo, licenze). NON va nel repo pubblico.
+wiki/

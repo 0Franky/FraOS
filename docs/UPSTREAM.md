@@ -6,7 +6,7 @@
 > poter riprendere il confronto da un punto preciso invece che da capo.
 
 **Repo:** https://github.com/morrolinux/morros
-**Ultimo controllo:** 2026-08-20 · **Ultimo commit upstream valutato:** `557a52d` (2026-08-19)
+**Ultimo controllo:** 2026-10-21 · **Ultimo commit upstream valutato:** `a042f76` (2026-10-14)
 
 ## Come si ricontrolla
 
@@ -42,6 +42,8 @@ Verificato il 2026-08-20 leggendo il `Containerfile` di HEAD: nessuna divergenza
 | `8843559` | 2026-07-12 | smette di rimuovere `xdg-desktop-portal-gnome` | ✅ sì → [D-018](DECISIONS.md#d-018) |
 | `75e8ba8` | 2026-07-19 | **"fix screen capture"**: commenta anche `remove gnome-shell` e l'install di `pipewire`; tiene solo `portal-wlr` | ✅ sì, **in versione più solida** → [D-018](DECISIONS.md#d-018) |
 | `557a52d` | 2026-08-19 | aggiunge `android-tools iperf3 ktls-utils podman-compose` | ✅ 3 su 4 → [D-022](DECISIONS.md#d-022) |
+| `f863502` | 2026-09-16 | `dnf swap ffmpeg-free ffmpeg` + `ffmpeg-devel` al posto di `install ffmpeg --allowerasing` | ❌ no: la nostra riga funziona (le build fallite di settembre-ottobre muoiono dopo, su `ddcutil`). Da riprendere se un giorno `ffmpeg` dà conflitti |
+| `108b383` `b311163` `6ea332a` `a042f76` | 2026-09-17 → 10-14 | "dev tools": `cargo rustfmt clippy clang cmake nasm perf`, header `-devel`, **`moby-engine` + `docker-cli` + `docker-compose`**, `firejail`, `netbird` | ❌ no (valutato 2026-10-21): toolchain Rust/C → `rustup` nella home o distrobox, come lo stack AI ([D-032](DECISIONS.md#d-032)); Docker sull'host contraddice [D-007](DECISIONS.md#d-007) (podman); `netbird` è un'alternativa a Tailscale, che abbiamo già |
 
 ### Nota su `75e8ba8` — il commit più importante
 È la conferma di un dubbio che avevamo già annotato a luglio: **Niri è basato su Smithay, non su

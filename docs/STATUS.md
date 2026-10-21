@@ -11,10 +11,10 @@
 
 | | |
 |---|---|
-| **Ultimo aggiornamento** | 2026-08-20 |
-| **Fase corrente** | **F3 — Backup pre-wipe** (poi F4, installazione) |
-| **Prossima azione** | Eseguire il backup di [`INSTALL.md` §FASE 1](INSTALL.md). L'immagine è pronta e scaricabile |
-| **Bloccante attivo** | Nessuno |
+| **Ultimo aggiornamento** | 2026-10-21 |
+| **Fase corrente** | **F3 — Backup pre-wipe**, non ancora iniziato |
+| **Prossima azione** | 1) build verde dopo il fix di [D-034](DECISIONS.md#d-034) · 2) scegliere quali modelli Ollama salvare · 3) [`INSTALL.md`](INSTALL.md) FASE 0 (SMART dell'HDD, avvio rapido, certificato EFS) |
+| **Bloccante attivo** | 🔴 **la build giornaliera fallisce dal 2026-09-28** (fix pronto, da pushare) |
 | **Obiettivo finale** | Formattare il PC e usare FraOS come OS primario (dual boot con Windows) |
 
 ## ✅ L'immagine esiste ed è verificata
@@ -25,6 +25,7 @@ sudo bootc switch ghcr.io/0franky/fraos:latest
 
 | | |
 |---|---|
+| ⚠️ **Attenzione** | i dati qui sotto sono della **prima** build (2026-08-20). L'ultima verde è del **2026-09-27**; da allora la CI fallisce ([D-034](DECISIONS.md#d-034)) |
 | **Registry** | `ghcr.io/0franky/fraos` — pubblico, **pullabile senza credenziali** (verificato) |
 | **Tag** | `latest` · `latest.20260820` · `20260820` · `bazzite` |
 | **Digest** | `sha256:38b54169004142074991764f4d09e82be79d5b46343404d8a733e186573d2ef1` |
@@ -93,10 +94,15 @@ vede i nomi, non i conflitti.
 
 ---
 
-## Decisioni aperte
+## Decisioni (domande a Fra del 2026-10-21, risposte lo stesso giorno)
 
-**Nessuna.** Tutte e 33 le decisioni sono chiuse. Da qui in avanti si esegue: backup,
-installazione, primo boot.
+| # | Domanda | Risposta di Fra |
+|---|---|---|
+| 1 | Ordine di installazione | ✅ **Windows prima, FraOS dopo**, un disco per volta → [D-035](DECISIONS.md#d-035) ACCETTATA |
+| 2 | Spazio sull'HDD | ✅ **disinstallare solo Call of Duty** (178 GB) |
+| 3 | I 33 GB di modelli Ollama | 🟡 **valutare modello per modello** quali salvare e quali riscaricare (alcuni potrebbero essere obsoleti) |
+| 4 | Commit e push del fix della build | ✅ sì |
+| 5 | Programmi in più (Flatpak/brew) | ⬜ aperta, non bloccante: proposta in `wiki/README.md` |
 
 **Assetto dischi (invertito il 2026-08-27, [D-033](DECISIONS.md#d-033)):**
 
@@ -112,6 +118,9 @@ installazione, primo boot.
 
 | Rischio | Mitigazione |
 |---|---|
+| **La CI fallisce in silenzio** (è già successo: 23 giorni) | Prima di installare, e ogni tanto dopo: `gh run list --workflow build.yml --limit 3` |
+| **L'HDD è l'unica copia** di quasi tutto durante la migrazione | Controllo SMART prima di iniziare; credenziali, `~/.claude` e `.env` anche su chiavetta e cloud ([`INSTALL.md`](INSTALL.md) 0.3, 3.7) |
+| `~/.claude` (hook, skill, memorie) usa percorsi e script Windows | Da adattare dopo il ripristino, non basta copiarlo ([`INSTALL.md`](INSTALL.md) 6.3) |
 | ArubaSign AppImage non parla col lettore smartcard | Middleware già bakato (`pcsc-lite`, `opensc`, `pcscd`); fallback = Distrobox o Windows |
 | `Mod+D` (launcher DMS) con IPC sbagliato | Correggere `dot_config/niri/config.kdl` e ri-pushare |
 | Niri non parte al primo boot | GNOME resta installato: da TTY `sudo systemctl stop greetd && sudo systemctl start gdm` ([D-018](DECISIONS.md#d-018)) |

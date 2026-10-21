@@ -190,7 +190,13 @@ dnf -y install quickshell dms greetd dms-greeter --allowerasing
 #   brightnessctl, ddcutil -> luminosita' (laptop / monitor esterni via DDC)
 #   cava                   -> visualizzatore audio del widget musica
 dnf -y install matugen material-symbols-fonts cliphist danksearch dgop
-dnf -y install wl-clipboard brightnessctl ddcutil cava
+dnf -y install wl-clipboard brightnessctl cava
+
+# ddcutil: dal 2026-09-28 Bazzite porta gia' `terra-ddcutil` (repo Terra), che va
+# in conflitto con il `ddcutil` di Fedora e faceva fallire l'intera transazione
+# (run 36462249502 e tutte le build giornaliere successive). Lo installiamo solo
+# se la base non ne porta gia' uno: serve ancora ai tag bluefin/rakuos.
+command -v ddcutil >/dev/null || dnf -y install ddcutil
 
 # Comandi richiesti dai bind in dot_config/niri/config.kdl: senza questi,
 # quelle scorciatoie sono morte (verificato leggendo la config, 2026-08-20).

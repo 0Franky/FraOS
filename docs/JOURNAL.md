@@ -8,6 +8,63 @@
 
 ---
 
+## 2026-10-21 — Sessione 4: ricognizione completa dopo 8 settimane, piano di migrazione
+
+**Contesto:** progetto fermo dal 2026-08-27. Fra chiede di ricostruire tutto, salvarlo in una
+wiki locale e fare un piano di migrazione **senza perdere dati**.
+
+**Fonti:** il repo (unica fonte completa). I transcript delle sessioni di luglio e agosto **non
+esistono più** sul disco: le sessioni rimaste (slm, NetView, WillHouse) non parlano mai di FraOS.
+L'artifact di luglio sta in un'altra organizzazione claude.ai, ma la sua copia è `PLAN.html`.
+
+**Scoperte, tutte misurate:**
+
+1. 🔴 **La build giornaliera fallisce dal 2026-09-28** (23 build rosse di fila). Causa: Bazzite ora
+   porta `terra-ddcutil`, che va in conflitto con il nostro `ddcutil`. `latest` è fermo
+   all'immagine del 2026-09-27. Corretto in `build.sh` → [D-034](DECISIONS.md#d-034)
+2. 🔴 **`~/.claude` vive sul Crucial 120** (`C:\Users\frhae\.claude` è un symlink a
+   `E:\claude\.claude`, 2 GB), cioè sul disco che va formattato per Windows. Non era nel piano
+3. 🔴 **Sul Crucial ci sono 39 GB** (`claude` 2, `flutter` 3,4, `ollama_models` 33). A
+   agosto il disco era considerato vuoto
+4. 🔴 **L'HDD ha solo 40 GB liberi** (ad agosto erano 155). Il backup non ci sta finché non si
+   liberano i giochi
+5. 🟡 **WSL `Ubuntu` contiene lavoro non pushato**: `~/wh` ha 29 commit non pushati. La home
+   WSL sta in un VHDX su `C:` e sparisce col wipe
+6. 🟡 **Docker Desktop ha 18 volumi** con dati di sviluppo (`willhouse-sa_postgres_data`,
+   `dev_vault-data`, `minio`, …): stanno nel VHDX di Docker su `C:`
+7. 🟡 Fra **usa davvero Ollama** (33 GB di modelli su `E:`) e **ha Unsloth Studio** installato su
+   Windows: il rischio "Unsloth Studio su Turing" ([D-032](DECISIONS.md#d-032)) si può
+   verificare **adesso**, prima di formattare
+8. Inventario programmi Windows completo → wiki locale (`wiki/software-inventario.md`)
+9. MorrOS: 4 commit nuovi valutati, nessuno recepito → [`UPSTREAM.md`](UPSTREAM.md)
+
+10. **Revisione indipendente del piano** (un agente senza il contesto della sessione): ha trovato
+    altri buchi seri, verificati a campione e integrati in [`INSTALL.md`](INSTALL.md): dati di
+    produzione in cartelle della home fuori da ogni lista, avvio rapido acceso sul Windows vecchio,
+    password dei browser non portabili, un certificato EFS, volumi Docker copiati a DB acceso,
+    `robocopy` che con un `/LOG` in una cartella inesistente non copia nulla, e la riga di
+    [D-019](DECISIONS.md#d-019) che diceva di staccare il disco sbagliato. Il backup ora copia
+    **tutta** la home tranne le cache, con una funzione `Copia` che si ferma al primo errore
+    (testata su dati finti)
+
+**Proposta:** invertire l'ordine di installazione, Windows prima e FraOS dopo, un disco collegato
+per volta → [D-035](DECISIONS.md#d-035) (PROPOSTA). Piano completo riscritto in
+[`INSTALL.md`](INSTALL.md).
+
+---
+
+## 2026-08-27 — Sessione 3: dischi invertiti
+
+*(Ricostruita dal commit `210bd7b`, il transcript non c'è più.)*
+
+Fra chiede se 120 GB per Windows non siano risicati. Rifatti i conti con le misure reali della
+macchina: lo stack dev/AI occupa già 68 GB su Windows, e su FraOS crescerebbe. Decisione:
+**FraOS sul SanDisk 480, Windows sul Crucial 120** → [D-033](DECISIONS.md#d-033).
+Analizzati i dischi: le VM sono già su `D:` (junction), quasi tutto `AppData` è cache. Riscritta
+la checklist di backup in [`INSTALL.md`](INSTALL.md).
+
+---
+
 ## 2026-08-20 — Sessione 2: ripresa, allineamento upstream, documentazione
 
 **Contesto:** progetto fermo da ~5 settimane. Fra vuole chiudere e installare: Windows non è
