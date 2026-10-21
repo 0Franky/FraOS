@@ -13,8 +13,8 @@
 |---|---|
 | **Ultimo aggiornamento** | 2026-10-21 |
 | **Fase corrente** | **F3 — Backup pre-wipe**, non ancora iniziato |
-| **Prossima azione** | 1) build verde dopo il fix di [D-034](DECISIONS.md#d-034) · 2) scegliere quali modelli Ollama salvare · 3) [`INSTALL.md`](INSTALL.md) FASE 0 (SMART dell'HDD, avvio rapido, certificato EFS) |
-| **Bloccante attivo** | 🔴 **la build giornaliera fallisce dal 2026-09-28** (fix pronto, da pushare) |
+| **Prossima azione** | 1) scegliere quali modelli Ollama salvare (`wiki/ollama-modelli.md`) · 2) [`INSTALL.md`](INSTALL.md) FASE 0: SMART dell'HDD, avvio rapido, certificato EFS |
+| **Bloccante attivo** | Nessuno. La CI è tornata verde il 2026-10-21 ([D-034](DECISIONS.md#d-034)), dopo 23 giorni di build rosse |
 | **Obiettivo finale** | Formattare il PC e usare FraOS come OS primario (dual boot con Windows) |
 
 ## ✅ L'immagine esiste ed è verificata
@@ -25,7 +25,7 @@ sudo bootc switch ghcr.io/0franky/fraos:latest
 
 | | |
 |---|---|
-| ⚠️ **Attenzione** | i dati qui sotto sono della **prima** build (2026-08-20). L'ultima verde è del **2026-09-27**; da allora la CI fallisce ([D-034](DECISIONS.md#d-034)) |
+| **Ultima build verde** | 2026-10-21, run `39624317568`: `latest` = config `sha256:e2572eac…`, creata 15:24 UTC, scaricabile senza credenziali. I dati qui sotto sono della **prima** build (2026-08-20) |
 | **Registry** | `ghcr.io/0franky/fraos` — pubblico, **pullabile senza credenziali** (verificato) |
 | **Tag** | `latest` · `latest.20260820` · `20260820` · `bazzite` |
 | **Digest** | `sha256:38b54169004142074991764f4d09e82be79d5b46343404d8a733e186573d2ef1` |

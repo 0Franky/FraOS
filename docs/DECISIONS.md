@@ -750,6 +750,9 @@ installa `ddcutil`.
 **Decisione:** `command -v ddcutil >/dev/null || dnf -y install ddcutil`. Su Bazzite si usa
 quello della base, che è più recente; sui tag `bluefin`/`rakuos` lo installiamo noi.
 
+**Verificato:** build verde il 2026-10-21 al primo tentativo (run `39624317568`, 9 minuti), `latest`
+ricreata alle 15:24 UTC. Il conflitto era l'unico errore.
+
 **Lezione:** un cron giornaliero che fallisce in silenzio vale quanto nessun cron. Prima di
 installare va controllato `gh run list --workflow build.yml --limit 5`: l'ultima build deve
 essere verde e recente (passo inserito in [`INSTALL.md`](INSTALL.md), FASE 0).

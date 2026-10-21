@@ -59,11 +59,14 @@ FASE 7  pulizia, non prima di 30 giorni
 
 ```bash
 gh run list --workflow build.yml --limit 5      # l'ultima deve essere "success" e di oggi/ieri
-gh api /users/0franky/packages/container/fraos/versions --jq '.[0].updated_at'
+# data di creazione di :latest, senza credenziali (gh api vorrebbe lo scope read:packages)
+T=$(curl -s "https://ghcr.io/token?scope=repository:0franky/fraos:pull" | jq -r .token)
+C=$(curl -s -H "Authorization: Bearer $T" -H "Accept: application/vnd.oci.image.manifest.v1+json"   https://ghcr.io/v2/0franky/fraos/manifests/latest | jq -r .config.digest)
+curl -sL -H "Authorization: Bearer $T" "https://ghcr.io/v2/0franky/fraos/blobs/$C" | jq -r .created
 ```
 ⚠️ Dal 2026-09-28 al 2026-10-21 la build è fallita ogni giorno senza che nessuno lo vedesse
-([D-034](DECISIONS.md#d-034)). Il fix è in `build.sh`: va pushato e serve **una build verde**
-prima della FASE 5.
+([D-034](DECISIONS.md#d-034)). Fix pushato e **build verde il 2026-10-21** (run 39624317568):
+il controllo va comunque rifatto il giorno della FASE 5.
 
 ### 0.2 Materiale
 
@@ -180,8 +183,11 @@ Il Crucial è il primo disco che si formatta. Va svuotato per intero.
 2. Copiare:
    ```powershell
    Copia E:\claude        "$B\E\claude"
-   Copia E:\ollama_models "$B\E\ollama_models"      # se si è deciso di tenerli
+   Copia E:\ollama_models "$B\E\ollama_models" @('/XD','.studio_links')   # solo i modelli scelti: wiki/ollama-modelli.md
    ```
+   `.studio_links` va escluso esplicitamente: sono 9 symlink di Unsloth Studio verso i blob, e
+   robocopy li ha contati come 47,9 GB di file veri anche con `/XJ` (misurato il 2026-10-21).
+   Copiarli raddoppierebbe i modelli sull'HDD; Unsloth Studio li ricrea da solo
    `E:\llm-group` è una junction verso `D:`: `/XJ` la salta, non c'è niente da copiare.
    `flutter` non si copia: si riclona. `E:\tmp` è vuota
 3. **Ripuntare i symlink di Claude Code** sulla copia, così continua a funzionare sul Windows
