@@ -13,7 +13,7 @@
 |---|---|
 | **Ultimo aggiornamento** | 2026-10-21 |
 | **Fase corrente** | **F3 — Backup pre-wipe**: runbook FASI 0-2 fatte, si passa alla FASE 3 |
-| **Prossima azione** | **FASE 3, parti a mano**: 3.4 password dei browser in CSV (3 profili Chrome + Edge) · 3.6 push dei repo · 3.7 archivio cifrato dei segreti · 3.8 verifica. Parti automatiche **fatte il 2026-10-21**: Docker (2 dump, 18 volumi), WSL 17,7 GB, home 23,8 GB, Roaming 14,5 GB, RustDesk, hosts, 7 profili Wi-Fi, winget. Backup totale ~93 GB, HDD 149 GB liberi, cartella accessibile solo a utente/SYSTEM/amministratori |
+| **Prossima azione** | **FASE 3, parti a mano**: 3.4 password dei browser: 1 CSV salvato (77 righe, ora in `_BACKUP-PREWIPE\C\password-browser`), da chiarire se copre tutti i profili · 3.6 push: InstrumentStudy e kanban-ai pushati, willhouse-be e `~/wh` di WSL verificati da **non** pushare (storia pre-reset / clone obsoleto) · 3.7 archivio cifrato dei segreti · 3.8 verifica. Parti automatiche **fatte il 2026-10-21**: Docker (2 dump, 18 volumi), WSL 17,7 GB, home 23,8 GB, Roaming 14,5 GB, RustDesk, hosts, 7 profili Wi-Fi, winget. Backup totale ~93 GB, HDD 149 GB liberi, cartella accessibile solo a utente/SYSTEM/amministratori |
 | **Bloccante attivo** | Nessuno. La CI è tornata verde il 2026-10-21 ([D-034](DECISIONS.md#d-034)), dopo 23 giorni di build rosse |
 | **Obiettivo finale** | Formattare il PC e usare FraOS come OS primario (dual boot con Windows) |
 
