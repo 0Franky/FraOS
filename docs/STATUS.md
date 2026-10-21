@@ -13,7 +13,7 @@
 |---|---|
 | **Ultimo aggiornamento** | 2026-10-21 |
 | **Fase corrente** | **F3 — Backup pre-wipe**, non ancora iniziato |
-| **Prossima azione** | [`INSTALL.md`](INSTALL.md) FASE 0: esportare il certificato EFS e controllare i file cifrati, licenze, Unsloth Studio sulla 2080 Ti. Già fatti: SMART (tutti sani), avvio rapido spento, FASE 1 |
+| **Prossima azione** | FASE 2: `tools/fase2-svuota-crucial.ps1` (da amministratore, con Claude Code e Ollama chiusi). In corso: ricerca dei file EFS e prova di Unsloth sulla 2080 Ti. Già fatti: SMART, avvio rapido, certificato EFS, FASE 1 |
 | **Bloccante attivo** | Nessuno. La CI è tornata verde il 2026-10-21 ([D-034](DECISIONS.md#d-034)), dopo 23 giorni di build rosse |
 | **Obiettivo finale** | Formattare il PC e usare FraOS come OS primario (dual boot con Windows) |
 
