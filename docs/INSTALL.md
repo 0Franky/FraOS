@@ -342,8 +342,14 @@ exFAT con robocopy, aggiungere `/FFT` (timestamp a 2 secondi).
 
 ## FASE 4 — Windows nuovo sul Crucial
 
+0. **Ultimo giro del backup**, subito prima di spegnere: robocopy copia solo ciò che è cambiato dal
+   giro precedente, quindi bastano pochi minuti (VS Code e Docker chiusi, da amministratore):
+   `powershell -ExecutionPolicy Bypass -File tools\fase3-backup-windows.ps1 -Passi home`
 1. Spegnere. **Staccare i cavi SATA del SanDisk e dell'HDD**: resta collegato solo il Crucial
-2. Boot dalla chiavetta A → installare Windows 11 sul Crucial (eliminare le sue partizioni)
+2. Boot dalla chiavetta A (F8 → voce UEFI della chiavetta) → "Non ho un codice Product Key"
+   (la licenza digitale si riattiva da sola) → installazione personalizzata. Nell'elenco deve
+   esserci **un solo disco, da 112 GB**: eliminare tutte le sue partizioni → spazio non allocato →
+   Avanti. **Se compare più di un disco: fermarsi**, vuol dire che un cavo è rimasto collegato
 3. Spegnere, **ricollegare tutto**. BIOS: primo disco di avvio il Crucial. Il vecchio Windows
    resta avviabile con F8: la sua ESP sta sul SanDisk, e formattare il Crucial non la tocca
 4. Le accortezze che fanno stare Windows in 120 GB ([D-033](DECISIONS.md#d-033)):
@@ -358,6 +364,7 @@ exFAT con robocopy, aggiungere `/FFT` (timestamp a 2 secondi).
    - Desktop/Documenti/Download/Immagini/Musica/Video → Proprietà → Percorso → le cartelle
      esistenti in `D:\Users\frhae\…`
    - Steam: aggiungere la libreria esistente `D:\SteamLibrary`
+   - Gestione disco: l'HDD deve avere la lettera **`D:`** (cartelle utente, Steam e backup usano quei percorsi)
    - la prima apertura di `D:\Users\frhae` chiede "Continua" e riscrive i permessi (l'utente è
      nuovo): su centinaia di GB è lento, ma è normale e non è un errore
 5. **Seconda occasione**: il `C:` del vecchio Windows ora è un disco dati. Tutto ciò che si
