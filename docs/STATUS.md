@@ -12,8 +12,8 @@
 | | |
 |---|---|
 | **Ultimo aggiornamento** | 2026-10-21 |
-| **Fase corrente** | **F3 — Backup pre-wipe**: runbook FASI 0-2 fatte, si passa alla FASE 3 |
-| **Prossima azione** | **FASE 3, parti a mano**: 3.4 password dei browser: 1 CSV salvato (77 righe, ora in `_BACKUP-PREWIPE\C\password-browser`), da chiarire se copre tutti i profili · 3.6 push: InstrumentStudy e kanban-ai pushati, willhouse-be e `~/wh` di WSL verificati da **non** pushare (storia pre-reset / clone obsoleto) · 3.7 archivio cifrato dei segreti · 3.8 verifica. Parti automatiche **fatte il 2026-10-21**: Docker (2 dump, 18 volumi), WSL 17,7 GB, home 23,8 GB, Roaming 14,5 GB, RustDesk, hosts, 7 profili Wi-Fi, winget. Backup totale ~93 GB, HDD 149 GB liberi, cartella accessibile solo a utente/SYSTEM/amministratori |
+| **Fase corrente** | **F3 — Backup pre-wipe**: runbook FASI 0-3 fatte, restano due controlli dei cloud |
+| **Prossima azione** | Chiudere la FASE 3: (1) Google Drive, OneDrive e kDrive senza file in attesa di caricamento · (2) su Drive `segreti-prewipe.7z` deve pesare **479.976.310 byte**. Poi **FASE 4**: Windows nuovo sul Crucial, con solo il Crucial collegato (serve una chiavetta da ≥ 8 GB per l'installer) |
 | **Bloccante attivo** | Nessuno. La CI è tornata verde il 2026-10-21 ([D-034](DECISIONS.md#d-034)), dopo 23 giorni di build rosse |
 | **Obiettivo finale** | Formattare il PC e usare FraOS come OS primario (dual boot con Windows) |
 

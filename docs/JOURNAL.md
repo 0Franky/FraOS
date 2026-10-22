@@ -8,6 +8,24 @@
 
 ---
 
+## 2026-10-21/22 — Sessione 4 (seconda parte): FASI 0-3 del runbook eseguite
+
+- **FASE 0:** SMART dei tre dischi sano (HDD: riallocati, in attesa e non correggibili a 0; il
+  SanDisk ha 7 errori CRC, cioè un problema di cavo). Avvio rapido spento. Certificato EFS esportato,
+  nessun file cifrato. Unsloth fa davvero il fine-tuning sulla 2080 Ti
+- **FASE 1:** cancellato Call of Duty, HDD da 40 a 225 GB liberi. Modelli Ollama sfoltiti a 16,5 GB
+  ([D-036](DECISIONS.md#d-036): Ollama resta in prova)
+- **FASE 2:** `tools/fase2-svuota-crucial.ps1`, Crucial svuotato, `~/.claude` e Ollama puntati su `D:`
+- **FASE 3:** `tools/fase3-backup-windows.ps1`, backup di circa 93 GB (home, Roaming, WSL, Docker con
+  dump e volumi). Tre fermate, tutte innocue e tutte corrette nello script (file riscritto da
+  Docker Desktop, lock spariti dalla sorgente, lock e log di Parsec). Cartella di backup ristretta
+  all'utente: i due account della sandbox di Codex potevano leggerla. Pushati InstrumentStudy e
+  kanban-ai; `willhouse-be` e `~/wh` di WSL verificati da **non** pushare. Password dei browser,
+  `.env` dei progetti e credenziali raccolti in `segreti-prewipe.7z` (AES-256, nomi cifrati), testato
+  e copiato su Telegram e Google Drive. Chiavi SSH della copia provate su GitHub e GitLab: funzionano
+
+---
+
 ## 2026-10-21 — Sessione 4: ricognizione completa dopo 8 settimane, piano di migrazione
 
 **Contesto:** progetto fermo dal 2026-08-27. Fra chiede di ricostruire tutto, salvarlo in una
