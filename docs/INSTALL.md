@@ -352,21 +352,34 @@ exFAT con robocopy, aggiungere `/FFT` (timestamp a 2 secondi).
    Avanti. **Se compare più di un disco: fermarsi**, vuol dire che un cavo è rimasto collegato
 3. Spegnere, **ricollegare tutto**. BIOS: primo disco di avvio il Crucial. Il vecchio Windows
    resta avviabile con F8: la sua ESP sta sul SanDisk, e formattare il Crucial non la tocca
-4. Le accortezze che fanno stare Windows in 120 GB ([D-033](DECISIONS.md#d-033)):
+4. Le regolazioni. Prima, a mano: `powercfg /h off` (niente ibernazione, ~6,5 GB, e niente
+   "avvio rapido": così Windows chiude l'NTFS in modo pulito ed è ciò che permette a FraOS di
+   scrivere sull'HDD condiviso). Il resto lo fa uno script, **con la chiavetta tolta** (se no
+   occupa la lettera `D:`), da una PowerShell **come amministratore**:
    ```powershell
-   powercfg /h off     # niente ibernazione (~6,5 GB) e niente "avvio rapido"
-   manage-bde -status  # Windows 11 può attivare da solo la crittografia: se C: è cifrato,
-                       # salvare la chiave di ripristino; D: NON deve risultare cifrato
+   powershell -ExecutionPolicy Bypass -File D:\Users\frhae\gitProjects\_current\FraOS\tools\fase4-windows-nuovo.ps1
    ```
-   Senza "avvio rapido" Windows chiude l'NTFS in modo pulito: è ciò che permette a FraOS di
-   scrivere sull'HDD condiviso.
-   - pagefile a 8 GB, o su `D:`
-   - Desktop/Documenti/Download/Immagini/Musica/Video → Proprietà → Percorso → le cartelle
-     esistenti in `D:\Users\frhae\…`
+   - HDD rimesso in linea se Windows l'ha messo offline, e lettera **`D:`**. Non lo inizializza
+     mai: se lo trova senza partizioni si ferma. ⚠️ In Gestione disco **mai** "Inizializza disco"
+     o "Nuovo volume" sull'HDD
+   - **permessi**: l'utente nuovo ha un SID diverso da quello vecchio, e `D:\Users\frhae` e
+     `_BACKUP-PREWIPE` erano riservati al vecchio (verificato il 2026-10-25). Lo script aggiunge
+     l'utente nuovo sulla radice delle due cartelle e Windows propaga ai file
+   - **BitLocker spento** su `C:` e cifratura automatica disattivata: il 2026-10-24 Windows 11 aveva
+     cifrato `C:` da solo, e con la cifratura attiva i cambi di Secure Boot/MOK della FASE 5 chiedono la
+     chiave di ripristino. `D:` non deve mai risultare cifrato
+   - Desktop/Documenti/Download/Immagini/Musica/Video sulle cartelle esistenti in `D:\Users\frhae\…`
+   - symlink `.claude` e `.claude.json` e `OLLAMA_MODELS` sulla copia in `_BACKUP-PREWIPE\E`, come
+     sul Windows vecchio dopo la FASE 2. I due Windows condividono così la stessa `~/.claude`: va
+     bene, perché non girano mai insieme
+
+   A mano, dopo:
+   - disconnettersi e rientrare (cartelle utente)
+   - `winget install -e --id Git.Git` · `winget install -e --id OpenJS.NodeJS.LTS` (gli hook di
+     Claude Code sono script node) · Claude Code con l'installer nativo:
+     `irm https://claude.ai/install.ps1 | iex`. Deve vedere memoria e skill
    - Steam: aggiungere la libreria esistente `D:\SteamLibrary`
-   - Gestione disco: l'HDD deve avere la lettera **`D:`** (cartelle utente, Steam e backup usano quei percorsi)
-   - la prima apertura di `D:\Users\frhae` chiede "Continua" e riscrive i permessi (l'utente è
-     nuovo): su centinaia di GB è lento, ma è normale e non è un errore
+   - pagefile: lasciarlo gestito da Windows su `C:`, oppure 8 GB fissi se lo spazio stringe
 5. **Seconda occasione**: il `C:` del vecchio Windows ora è un disco dati. Tutto ciò che si
    scopre di aver dimenticato si copia da lì, finché non parte la FASE 5. Per passare da un
    Windows all'altro: **Riavvia**, mai **Arresta**

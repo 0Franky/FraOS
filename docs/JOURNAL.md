@@ -8,6 +8,23 @@
 
 ---
 
+## 2026-10-24/25 — Sessione 4 (terza parte): FASE 4, Windows nuovo sul Crucial
+
+- **Windows installato sul Crucial** con solo quel disco collegato: ESP propria + Windows (110,7 GB)
+  + Recovery. Il SanDisk è intatto con la sua ESP e il vecchio Windows si avvia con F8.
+  `powercfg /h off` fatto anche sul nuovo
+- **Windows 11 ha cifrato `C:` da solo** (Crittografia dispositivo: 98,1%, protezione ancora
+  disattivata, nessuna chiave): da spegnere prima della FASE 5, altrimenti i cambi di Secure Boot
+  e MOK possono chiedere la chiave di ripristino
+- **Trovato un buco: i permessi su `D:`.** `D:\Users\frhae` e `D:\_BACKUP-PREWIPE` danno accesso
+  solo al SID dell'utente vecchio; l'utente del Windows nuovo ha un SID diverso, quindi senza UAC
+  elevato non ci entra (Claude Code compreso). Lo corregge `tools/fase4-windows-nuovo.ps1`, insieme
+  a lettera dell'HDD, BitLocker, cartelle utente e symlink di Claude Code
+- ISO Bazzite GNOME NVIDIA (6,86 GB) in scaricamento in `D:\_iso`, da verificare con lo SHA256
+  ufficiale (`…-CHECKSUM` accanto all'ISO). CI verde ogni giorno (ultimo run 2026-10-24)
+
+---
+
 ## 2026-10-21/22 — Sessione 4 (seconda parte): FASI 0-3 del runbook eseguite
 
 - **FASE 0:** SMART dei tre dischi sano (HDD: riallocati, in attesa e non correggibili a 0; il

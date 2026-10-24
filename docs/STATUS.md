@@ -11,9 +11,9 @@
 
 | | |
 |---|---|
-| **Ultimo aggiornamento** | 2026-10-21 |
-| **Fase corrente** | **F3 — Backup pre-wipe**: runbook FASI 0-3 fatte, restano due controlli dei cloud |
-| **Prossima azione** | Chiudere la FASE 3: (1) Google Drive, OneDrive e kDrive senza file in attesa di caricamento · (2) su Drive `segreti-prewipe.7z` deve pesare **479.976.310 byte**. Poi **FASE 4**: Windows nuovo sul Crucial, con solo il Crucial collegato (serve una chiavetta da ≥ 8 GB per l'installer) |
+| **Ultimo aggiornamento** | 2026-10-25 |
+| **Fase corrente** | **F3 — Migrazione**: runbook FASI 0-4 fatte, Windows nuovo installato sul Crucial, mancano le sue regolazioni (4.4) |
+| **Prossima azione** | Sul Windows nuovo, **dischi ricollegati e chiavetta tolta**: `tools/fase4-windows-nuovo.ps1` da amministratore (HDD su `D:`, permessi, BitLocker spento, cartelle utente, Claude Code), poi Git, Node e Claude Code ([`INSTALL.md`](INSTALL.md) 4.4). Poi **FASE 5**: ISO già pronta in `D:\_iso`, da scrivere sulla chiavetta |
 | **Bloccante attivo** | Nessuno. La CI è tornata verde il 2026-10-21 ([D-034](DECISIONS.md#d-034)), dopo 23 giorni di build rosse |
 | **Obiettivo finale** | Formattare il PC e usare FraOS come OS primario (dual boot con Windows) |
 
@@ -119,6 +119,7 @@ vede i nomi, non i conflitti.
 | Rischio | Mitigazione |
 |---|---|
 | **La CI fallisce in silenzio** (è già successo: 23 giorni) | Prima di installare, e ogni tanto dopo: `gh run list --workflow build.yml --limit 3` |
+| PR #6 di Dependabot (7 GitHub Actions aggiornate, aperta dal 2026-08-20) | **Non** mergiarla prima della FASE 5: una CI rotta il giorno dell'installazione costa più del beneficio. Dopo, merge e controllo che la build resti verde |
 | **L'HDD è l'unica copia** di quasi tutto durante la migrazione | Controllo SMART prima di iniziare; credenziali, `~/.claude` e `.env` anche su chiavetta e cloud ([`INSTALL.md`](INSTALL.md) 0.3, 3.7) |
 | `~/.claude` (hook, skill, memorie) usa percorsi e script Windows | Da adattare dopo il ripristino, non basta copiarlo ([`INSTALL.md`](INSTALL.md) 6.3) |
 | ArubaSign AppImage non parla col lettore smartcard | Middleware già bakato (`pcsc-lite`, `opensc`, `pcscd`); fallback = Distrobox o Windows |
