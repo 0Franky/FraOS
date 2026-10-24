@@ -20,8 +20,8 @@
   solo al SID dell'utente vecchio; l'utente del Windows nuovo ha un SID diverso, quindi senza UAC
   elevato non ci entra (Claude Code compreso). Lo corregge `tools/fase4-windows-nuovo.ps1`, insieme
   a lettera dell'HDD, BitLocker, cartelle utente e symlink di Claude Code
-- ISO Bazzite GNOME NVIDIA (6,86 GB) in scaricamento in `D:\_iso`, da verificare con lo SHA256
-  ufficiale (`…-CHECKSUM` accanto all'ISO). CI verde ogni giorno (ultimo run 2026-10-24)
+- ISO Bazzite GNOME NVIDIA (7.364.149.248 byte) in `D:\_iso`, SHA256 uguale a quello ufficiale
+  (`0e35dcb3…451b1c`, dal file `…-CHECKSUM` accanto all'ISO). CI verde ogni giorno (ultimo run 2026-10-24)
 
 ---
 
