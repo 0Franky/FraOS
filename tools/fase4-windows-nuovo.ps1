@@ -42,7 +42,11 @@ if (-not (Test-Path "$B\E\claude\.claude\settings.json")) { throw "D: non e' l'H
 
 # --- 2. permessi per l'utente nuovo --------------------------------------------------------
 'permessi: Windows li propaga a tutti i file sotto D:\Users\frhae, puo'' volerci qualche minuto...'
-foreach ($p in 'D:\Users\frhae', $B) {
+# Documents/Music/Pictures/Videos hanno l'ereditarieta' spenta (cartelle utente di Windows): vanno a parte
+foreach ($p in 'D:\Users\frhae', 'D:\Users\frhae\Documents', 'D:\Users\frhae\Music', 'D:\Users\frhae\Pictures', 'D:\Users\frhae\Videos', $B) {
+  # gia' concesso (il 2026-10-26 dal Windows vecchio su D:\Users\frhae: 36 minuti di propagazione) -> non rifarlo
+  $sid = ([Security.Principal.NTAccount]$env:USERNAME).Translate([Security.Principal.SecurityIdentifier]).Value
+  if ((Get-Acl $p).Access | Where-Object { $_.IdentityReference.Translate([Security.Principal.SecurityIdentifier]).Value -eq $sid -and $_.FileSystemRights -match 'FullControl' }) { "OK  $p (gia' fatto)"; continue }
   icacls $p /grant "$($env:USERNAME):(OI)(CI)F" /C /Q | Out-Null     # SENZA /T
   if ($LASTEXITCODE -ne 0) { throw "icacls su $p fallito (codice $LASTEXITCODE)" }
   "OK  $env:USERNAME ha accesso a $p"
