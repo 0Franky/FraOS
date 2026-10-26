@@ -356,6 +356,8 @@ systemctl enable fraos-firstboot-flatpaks.service
 # NVIDIA Container Toolkit (GPU dentro i container/podman)
 curl -s -L https://nvidia.github.io/libnvidia-container/stable/rpm/nvidia-container-toolkit.repo \
   -o /etc/yum.repos.d/nvidia-container-toolkit.repo
+# su RakuOS dnf non importa la chiave e rpm rifiuta i pacchetti (NOKEY ddcae044f796ecb0, run 40252760293)
+rpm --import https://nvidia.github.io/libnvidia-container/gpgkey
 dnf -y install nvidia-container-toolkit
 
 # Schemi glib (necessari ad alcune app GTK)

@@ -398,14 +398,23 @@ exFAT con robocopy, aggiungere `/FFT` (timestamp a 2 secondi).
 ## FASE 5 — FraOS sul SanDisk (punto di non ritorno per il vecchio Windows)
 
 **Prima di partire:** FASE 0.1 verde · checklist 3.8 tutta spuntata · nessun "ah, devo
-ancora copiare…" in sospeso.
+ancora copiare…" in sospeso · **ultimo giro del backup dal Windows vecchio**, perché ci si è
+lavorato anche dopo la FASE 3 (dal 21 al 26 ottobre 2026): app chiuse, da amministratore,
+`powershell -ExecutionPolicy Bypass -File tools\fase3-backup-windows.ps1 -Passi home`
+(più `docker` e `wsl` se nel frattempo sono stati usati).
+La chiavetta con l'ISO Bazzite è pronta (Rufus, modalità DD, 2026-10-26): al boot, "Test this media".
 
 1. Spegnere. **Staccare i cavi SATA del Crucial e dell'HDD**: resta solo il SanDisk
 2. BIOS: UEFI, CSM off, Secure Boot **ON** ([D-015](DECISIONS.md#d-015))
 3. Boot dalla chiavetta A con l'ISO Bazzite GNOME NVIDIA → Anaconda → destinazione il SanDisk
    (l'unico disco), eliminando le partizioni del vecchio Windows
-4. Primo boot: enrollment MOK, password **`universalblue`**. Verificare desktop e rete
-   (l'HDD è staccato: nessun rischio di toccarlo)
+4. Primo boot: schermata blu → **Enroll MOK** → password **`universalblue`** (la tastiera lì è
+   inglese QWERTY: per questa password non cambia nulla). Verificare desktop e rete
+   (l'HDD è staccato: nessun rischio di toccarlo).
+   Se compare `bad shim signature` / `you need to load the kernel first` ("Method B" della
+   [guida Bazzite](https://docs.bazzite.gg/General/Installation_Guide/secure_boot/), verificata il
+   2026-10-26): Secure Boot OFF, avvio, `ujust enroll-secure-boot-key` (password `universalblue`),
+   riavvio, Enroll MOK, Secure Boot di nuovo ON
 5. Spegnere, **ricollegare tutto**, riaccendere su Bazzite e passare a FraOS:
    ```bash
    sudo bootc switch ghcr.io/0franky/fraos:latest
