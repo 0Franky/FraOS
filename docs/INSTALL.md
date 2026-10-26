@@ -367,7 +367,16 @@ exFAT con robocopy, aggiungere `/FFT` (timestamp a 2 secondi).
      l'utente nuovo sulla radice delle due cartelle e Windows propaga ai file
    - **BitLocker spento** su `C:` e cifratura automatica disattivata: il 2026-10-24 Windows 11 aveva
      cifrato `C:` da solo, e con la cifratura attiva i cambi di Secure Boot/MOK della FASE 5 chiedono la
-     chiave di ripristino. `D:` non deve mai risultare cifrato
+     chiave di ripristino. `D:` non deve mai risultare cifrato: Linux (`ntfs3`) non legge BitLocker.
+     ⚠️ **Successo davvero:** ricollegati i dischi, Windows nuovo ha iniziato a cifrare da solo **anche
+     l'HDD e il SanDisk**. Spegnendo la Crittografia dispositivo sono tornati in chiaro senza perdite
+     (2026-10-26: `manage-bde -status` dal Windows vecchio dice *Decrittografia completata* su tutti e
+     tre, hash dell'archivio dei segreti invariato). La prossima volta: Crittografia dispositivo
+     **spenta prima** di ricollegare gli altri dischi
+   - se l'utente nuovo non si chiama `frhae` (il 2026-10-24 è nato **`Fra`**), junction
+     `C:\Users\frhae` → profilo nuovo: `settings.json` di Claude Code ha 69 percorsi `C:/Users/frhae`
+   - QoS "Limita larghezza di banda riservabile" all'8% (= `gpedit.msc` → Rete → Utilità di
+     pianificazione pacchetti QoS)
    - Desktop/Documenti/Download/Immagini/Musica/Video sulle cartelle esistenti in `D:\Users\frhae\…`
    - symlink `.claude` e `.claude.json` e `OLLAMA_MODELS` sulla copia in `_BACKUP-PREWIPE\E`, come
      sul Windows vecchio dopo la FASE 2. I due Windows condividono così la stessa `~/.claude`: va

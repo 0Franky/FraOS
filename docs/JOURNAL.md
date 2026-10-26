@@ -20,6 +20,15 @@
   solo al SID dell'utente vecchio; l'utente del Windows nuovo ha un SID diverso, quindi senza UAC
   elevato non ci entra (Claude Code compreso). Lo corregge `tools/fase4-windows-nuovo.ps1`, insieme
   a lettera dell'HDD, BitLocker, cartelle utente e symlink di Claude Code
+- ⚠️ **Ricollegati i dischi, il Windows nuovo ha iniziato a cifrare con BitLocker anche l'HDD e il
+  SanDisk** (Crittografia dispositivo, chiave in chiaro). Spenta la crittografia, tutti e tre sono
+  tornati in chiaro: il 2026-10-26 *Decrittografia completata* su `C:`, `D:`, `E:` visti dal Windows
+  vecchio, SHA256 di `segreti-prewipe.7z` invariato. Nessun dato perso. Il runbook ora dice di
+  spegnerla prima di ricollegare
+- L'utente del Windows nuovo si chiama **`Fra`**, non `frhae`: lo script crea la junction
+  `C:\Users\frhae` → `C:\Users\Fra` per i 69 percorsi di `settings.json`. Corretto anche un difetto
+  dello script prima che girasse: `New-Item -Force` su una chiave di registro esistente ne cancella
+  i valori (provato), sostituito da un controllo `Test-Path`
 - ISO Bazzite GNOME NVIDIA (7.364.149.248 byte) in `D:\_iso`, SHA256 uguale a quello ufficiale
   (`0e35dcb3…451b1c`, dal file `…-CHECKSUM` accanto all'ISO). CI verde ogni giorno (ultimo run 2026-10-24)
 

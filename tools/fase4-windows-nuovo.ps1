@@ -49,7 +49,8 @@ foreach ($p in 'D:\Users\frhae', $B) {
 }
 
 # --- 3. BitLocker su C: spento, e niente cifratura automatica in futuro -----------------------
-New-Item -Force 'HKLM:\SYSTEM\CurrentControlSet\Control\BitLocker' | Out-Null
+function Chiave($k) { if (-not (Test-Path $k)) { New-Item $k | Out-Null } }   # NON New-Item -Force: su una chiave esistente ne cancella i valori
+Chiave 'HKLM:\SYSTEM\CurrentControlSet\Control\BitLocker'
 Set-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\BitLocker' PreventDeviceEncryption 1 -Type DWord
 $bl = Get-BitLockerVolume C:
 if ($bl.VolumeStatus -ne 'FullyDecrypted') {
@@ -73,7 +74,8 @@ foreach ($k in $cartelle.Keys) {
 
 # --- 5. Claude Code e Ollama sulla copia -----------------------------------------------------
 # rmdir e del su un symlink tolgono SOLO il link. NON Remove-Item (vedi fase2-svuota-crucial.ps1)
-if ($env:USERNAME -ne 'frhae') { "ATTENZIONE: l'utente e' '$env:USERNAME', ma hook e script di ~/.claude usano C:/Users/frhae" }
+# l'utente nuovo si chiama Fra, ma settings.json ha 69 percorsi C:/Users/frhae (2026-10-26): una junction li fa tornare
+if ($env:USERNAME -ne 'frhae' -and -not (Test-Path C:\Users\frhae)) { cmd /c mklink /J C:\Users\frhae "$env:USERPROFILE" | Out-Null; "OK  C:\Users\frhae -> $env:USERPROFILE" }
 foreach ($l in @(@{n='.claude'; dir=$true}, @{n='.claude.json'; dir=$false})) {
   $p = Join-Path $env:USERPROFILE $l.n
   $item = Get-Item $p -Force -ErrorAction SilentlyContinue
@@ -85,6 +87,11 @@ foreach ($l in @(@{n='.claude'; dir=$true}, @{n='.claude.json'; dir=$false})) {
 }
 setx /M OLLAMA_MODELS "$B\E\ollama_models" | Out-Null
 'OK  OLLAMA_MODELS = ' + [Environment]::GetEnvironmentVariable('OLLAMA_MODELS', 'Machine')
+
+# --- 6. QoS: "Limita larghezza di banda riservabile" all'8% (richiesta di Fra, = gpedit.msc) ---------
+Chiave 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\Psched'
+Set-ItemProperty 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\Psched' NonBestEffortLimit 8 -Type DWord
+'OK  banda riservabile QoS: 8%'
 
 ''
 'Regolazioni fatte. Restano a mano: Steam -> libreria D:\SteamLibrary; installare Git, Node e Claude Code'
