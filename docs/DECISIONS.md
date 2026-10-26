@@ -49,6 +49,7 @@
 | [D-034](#d-034) | `ddcutil` solo se la base non lo porta già (conflitto con `terra-ddcutil`) | ACCETTATA | 2026-10-21 |
 | [D-035](#d-035) | Ordine: **Windows nuovo prima, FraOS dopo**, un disco collegato per volta | ACCETTATA | 2026-10-21 |
 | [D-036](#d-036) | Ollama resta, **in prova**: un confronto vLLM / Ollama / Unsloth Studio decide chi serve i modelli | ACCETTATA | 2026-10-21 |
+| [D-037](#d-037) | Due sistemi installati **insieme**: akuos veloce per lavorare, azzite stabile come fallback, entrambi nel menu di avvio | PROPOSTA (Secure Boot da decidere) | 2026-10-26 |
 
 ---
 
@@ -811,3 +812,36 @@ la maggiore. valutiamo chi riesce a servire in modo migliore e teniamo quello."*
 - Unsloth Studio resta comunque per il **fine-tuning**: il confronto riguarda solo il servire
 - `fraos-ai-update` ora aggiorna anche l'immagine di Ollama, se è stata scaricata: il filtro prima
   la escludeva, e un Ollama in container sarebbe rimasto indietro senza avvisare
+
+---
+
+## D-037
+### Due sistemi insieme: uno veloce per lavorare, uno stabile di riserva
+**Stato:** PROPOSTA · **Data:** 2026-10-26 · **Integra:** [D-009](#d-009), [D-030](#d-030)
+
+**Richiesta di Fra (2026-10-26):** *"avevamo detto di tenerne 2 in contemporanea: una rapida ma
+instabile per i lavori e una stabile ma meno prestante in caso di problemi o fallback"*. È l'idea
+di [D-004](#d-004) (CachyOS primario + Fedora di riserva), sopravvissuta come multi-tag.
+
+**Come si fa, senza reinstallare:** ostree tiene più deployment sullo stesso disco e li elenca
+**tutti** nel menu di GRUB. Con `ostree admin pin` un deployment non viene più rimosso dagli update:
+```bash
+sudo bootc switch ghcr.io/0franky/fraos:latest     # Bazzite: la stabile
+sudo ostree admin pin 0                             # la fissa (indice da `rpm-ostree status`)
+sudo bootc switch ghcr.io/0franky/fraos:rakuos     # RakuOS -v3, kernel CachyOS: la veloce
+sudo systemctl reboot                              # all'avvio GRUB mostra entrambe
+```
+Costo: ~15-20 GB in più sul SanDisk, previsti in [D-033](#d-033).
+
+**Due punti aperti, da Fra:**
+1. **Secure Boot.** RakuOS ha il modulo NVIDIA non firmato: per avviarla serve SB **spento**
+   ([D-015](#d-015)), e con SB spento si avviano tutte e due. Ma lo spegnimento vale anche per
+   Windows, e alcuni anti-cheat (Battlefield 6, Valorant, i nuovi Call of Duty) lo richiedono
+   acceso. Le strade: SB spento sempre · SB acceso e si accende/spegne da BIOS quando serve
+   RakuOS · firmare i moduli con una propria chiave MOK (lavoro in più a ogni update del kernel)
+2. **Quanto è "rapida".** La ricerca di luglio ([D-008](#d-008)) misurava un guadagno **~zero**
+   per dev, browser e container; BORE e `-v3` si sentono sotto carico CPU pesante (compilazioni
+   lunghe). Va misurato sulla macchina, non dato per scontato
+
+**Stato delle immagini (2026-10-26):** i tag `bluefin` e `rakuos` **non erano mai stati costruiti**
+(la build delle varianti è manuale, [D-030](#d-030)). Lanciata la prima: run `40252022906`.
