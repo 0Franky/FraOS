@@ -79,8 +79,11 @@ if ($env:USERNAME -ne 'frhae' -and -not (Test-Path C:\Users\frhae)) { cmd /c mkl
 foreach ($l in @(@{n='.claude'; dir=$true}, @{n='.claude.json'; dir=$false})) {
   $p = Join-Path $env:USERPROFILE $l.n
   $item = Get-Item $p -Force -ErrorAction SilentlyContinue
-  if ($item -and $item.LinkType -ne 'SymbolicLink') { throw "$p esiste e non e' un symlink (Claude Code gia' avviato qui?): spostalo e rilancia" }
-  if ($item) { if ($l.dir) { cmd /c rmdir "$p" } else { cmd /c del "$p" } }
+  if ($item -and $item.LinkType -ne 'SymbolicLink') {
+    # Claude Code gia' avviato qui (2026-10-24): config nuova e quasi vuota. Si mette da parte, non si cancella
+    if (Get-Process claude -ErrorAction SilentlyContinue) { throw "chiudi Claude Code e rilancia: $p e' in uso" }
+    Rename-Item $p "$($l.n).windows-nuovo"; "OK  $p messo da parte come $($l.n).windows-nuovo"
+  } elseif ($item) { if ($l.dir) { cmd /c rmdir "$p" } else { cmd /c del "$p" } }
   $t = "$B\E\claude\$($l.n)"
   if ($l.dir) { cmd /c mklink /D "$p" "$t" | Out-Null } else { cmd /c mklink "$p" "$t" | Out-Null }
   "OK  {0} -> {1}" -f $p, ((Get-Item $p -Force).Target -join '')
