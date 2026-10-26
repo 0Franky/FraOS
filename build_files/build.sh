@@ -56,7 +56,11 @@ dnf -y install \
   tmux \
   seahorse gnome-keyring \
   distrobox \
-  podman-docker podman-compose
+  podman-compose
+
+# podman-docker: Bluefin-dx porta gia' docker-ce, con cui confligge (run 40252022906).
+# Li' resta docker-ce; su Bazzite e RakuOS il comando `docker` lo da' podman (D-007).
+rpm -q docker-ce >/dev/null || dnf -y install podman-docker
 
 # Networking diagnostics + Android/adb (allineati a MorrOS 557a52d, 2026-08-19;
 # ktls-utils volutamente escluso). iperf3 = test banda, android-tools = adb/fastboot.
@@ -141,7 +145,9 @@ dnf -y install niri
 # Cursore Bibata
 curl -Lo /etc/yum.repos.d/peterwu.repo \
   https://copr.fedorainfracloud.org/coprs/peterwu/rendezvous/repo/fedora-$(rpm -E %fedora)/peterwu-rendezvous-fedora-$(rpm -E %fedora).repo
-dnf -y install bibata-cursor-themes
+# RakuOS porta gia' `bibata-cursor-theme` (singolare, stessi file): confligge con il
+# pacchetto del copr (run 40252022906)
+rpm -q bibata-cursor-theme >/dev/null || dnf -y install bibata-cursor-themes
 
 # --- Font ---------------------------------------------------------------
 # kitty.conf chiede "JetBrainsMono Nerd Font": la versione PATCHATA con i glifi
